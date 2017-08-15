@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         hour = calendar.get(Calendar.HOUR_OF_DAY);
         minute = calendar.get(Calendar.MINUTE);
 
-        main_time.setText(hour+":"+minute);
+        main_time.setText(String.format("%02d",hour)+":"+String.format("%02d",minute));
 
         //시간 클릭 이벤트
         findViewById(R.id.main_time).setOnClickListener(new View.OnClickListener() {
@@ -86,23 +86,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //라이프사이클 상위클래스 상속은 지우면 안됨!!!!
         super.onResume();
 
-        //메인화면 리스트 뿌려질 데이터 가져오기
-        DbHelper helper = new DbHelper(this);
-        SQLiteDatabase db = helper.getWritableDatabase();
-        Cursor cursor = db.rawQuery("select rt_id, rt_nm from tb_route order by rt_nm desc", null);
-        datas = new ArrayList<>();
-        while(cursor.moveToNext()){
-            RouteVO vo = new RouteVO();
-            vo.rt_id = cursor.getInt(0);
-            vo.rt_nm = cursor.getString(1);
-            datas.add(vo);
-        }
-
-        db.close();
-
-        //Adapter 처리, 즉, 커스텀 리스트뷰를 만들어서 main activity의 main_list_item로 세팅해주는 부분
-        MainListAdapter adapter = new MainListAdapter(this, R.layout.main_list_item, datas);
-        listView.setAdapter(adapter);
+        //최초 로딩 시 전체 리스트 뿌려주기
+        searchFun(null, null, null);
     }
 
     //메뉴구성을 위해 자동으로 콜되는 함수
@@ -134,7 +119,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             searchView.setIconified(true);
 
             //로직처리부분
-            Log.d("kkang", query);
+            String time = main_time.getText().toString();
+            String gubun = gubunButton.getTexts().toString();
+
+            Log.d("jojo", time);
+            Log.d("jojo", gubun);
+
+            searchFun(query, null, null);
 
             return false;
         }
@@ -152,5 +143,36 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //detail 조회를 위한 id값 intent로 넘기기
         intent.putExtra("rt_id", datas.get(i).rt_id);
         startActivity(intent);
+    }
+
+    public void searchFun(String searchStr, String time, String gubun){
+
+        //메인화면 리스트 뿌려질 데이터 가져오기
+        DbHelper helper = new DbHelper(this);
+        SQLiteDatabase db = helper.getWritableDatabase();
+        Cursor cursor;
+        if(searchStr == null || searchStr.equals("") ){
+            cursor = db.rawQuery("select distinct rt_id, rt_nm from tb_route order by rt_nm desc", null);
+        }else{
+            cursor = db.rawQuery(
+                            "select distinct a.rt_id, a.rt_nm from tb_route a ,tb_stop b where a.rt_id = b.rt_id and (a.rt_nm like ? or b.stop_nm like ?) " +
+                                    "order by a.rt_nm desc"
+                    , new String[]{"%"+searchStr+"%", "%"+searchStr+"%"});
+        }
+
+        datas = new ArrayList<>();
+        while(cursor.moveToNext()){
+            RouteVO vo = new RouteVO();
+            vo.rt_id = cursor.getInt(0);
+            vo.rt_nm = cursor.getString(1);
+            datas.add(vo);
+        }
+
+        db.close();
+
+        //Adapter 처리, 즉, 커스텀 리스트뷰를 만들어서 main activity의 main_list_item로 세팅해주는 부분
+        MainListAdapter adapter = new MainListAdapter(this, R.layout.main_list_item, datas);
+        listView.setAdapter(adapter);
+
     }
 }
