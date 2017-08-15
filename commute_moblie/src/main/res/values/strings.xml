@@ -1,9 +1,13 @@
 <resources>
     <string name="app_name">App</string>
+    <string name="app_pkg_name">com.commute_mobile</string>
+    <string name="db_name">sqliteDB.db</string>
+
     <string name="main_search_hint">검색어를 입력하세요</string>
     <string name="main_back_end">종료할려면 한번 더 누르세요</string>
     <string name="main_list_phone_error">전화번호가 등록되지 않았습니다.</string>
     <string name="add_name_null">이름을 입력하셔야 합니다.</string>
     <string name="read_add_score_dialog_message"> 으로 점수를 등록 하시겠습니까?</string>
     <string name="read_add_score_over_score">100점 이상은 추가 불가</string>
+    <string name="title_activity_read_stop">ReadStopActivity</string>
 </resources>

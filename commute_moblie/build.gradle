@@ -35,8 +35,7 @@ dependencies {
     })
     compile 'com.android.support:appcompat-v7:26.+'
     compile 'com.android.support.constraint:constraint-layout:1.0.2'
-    compile 'com.github.navasmdc:MaterialDesign:1.5@aar'
-    testCompile 'junit:junit:4.12'
     compile 'com.android.support:gridlayout-v7:26.0.0-alpha1'
-    compile 'info.hoang8f:fbutton:1.0.5'
+    compile 'com.android.support:design:26.+'
+    testCompile 'junit:junit:4.12'
 }
