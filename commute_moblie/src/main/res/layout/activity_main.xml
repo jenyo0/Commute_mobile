@@ -7,31 +7,47 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@color/subSearchBar">
-        <Switch
+        android:layout_height="40dp"
+        android:orientation="horizontal"
+        android:layout_marginTop="4dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"
+        >
+
+        <Button
+            android:id="@+id/main_time"
             android:layout_width="0dp"
-            android:layout_weight="4"
-            android:layout_height="match_parent"
-            android:textOn="출근"
-            android:textOff="퇴근"
-            />
-        <TextView
+            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:background="@color/colorPrimary"
+            android:textColor="@color/white"
+            android:layout_gravity="left"/>
+
+        <LinearLayout
             android:layout_width="0dp"
-            android:layout_weight="2"
-            android:layout_height="match_parent"
-            android:text="06:00"
-            android:textSize="32dp"
-            android:textStyle="bold"
-            android:textAlignment="viewEnd"
-            android:layout_gravity="center"
+            android:layout_weight="1"
+            android:layout_height="wrap_content"/>
+
+        <org.honorato.multistatetogglebutton.MultiStateToggleButton
+            android:id="@+id/main_gubun_multi_toggle"
+            android:layout_width="0dp"
+            android:layout_weight="1.5"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right"
+            app:values="@array/gubun_array"
+            app:mstbPrimaryColor="@color/colorPrimary"
+            app:mstbSecondaryColor="@color/white"
+
             />
+
     </LinearLayout>
 
     <ListView
         android:id="@+id/main_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="@dimen/default_gap"></ListView>
-    
+        android:layout_marginTop="50dp"
+        android:layout_marginLeft="4dp"
+        android:layout_marginRight="4dp"></ListView>
+
 </LinearLayout>

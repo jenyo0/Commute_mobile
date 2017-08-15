@@ -1,5 +1,6 @@
 package samsungkh.com.commute_moblie;
 
+import android.app.TimePickerDialog;
 import android.content.Intent;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -12,26 +13,73 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TimePicker;
+
+import org.honorato.multistatetogglebutton.MultiStateToggleButton;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
 
     //하위호환성 문제로 support LIB 를 import해야 함.
     SearchView searchView;
+    MultiStateToggleButton gubunButton;
 
     ArrayList<RouteVO> datas;
     ListView listView;
+    Button main_time;
+    int hour, minute;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Button button = (Button)this.findViewById(R.id.main_time);
+        main_time = button;
+
+        Calendar calendar = Calendar.getInstance();
+        hour = calendar.get(Calendar.HOUR_OF_DAY);
+        minute = calendar.get(Calendar.MINUTE);
+
+        main_time.setText(hour+":"+minute);
+
+        //시간 클릭 이벤트
+        findViewById(R.id.main_time).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String time = main_time.getText().toString();
+                Log.d("jojo", time.substring(0,2));
+                Log.d("jojo", time.substring(3));
+                if(!(time).equals("") || time != null){
+                    new TimePickerDialog(MainActivity.this, timeSetListener, Integer.parseInt(time.substring(0,2)) , Integer.parseInt(time.substring(3)), false).show();
+                }else{
+                    new TimePickerDialog(MainActivity.this, timeSetListener, hour, minute, false).show();
+                }
+            }
+        });
+
+        //출퇴근 버튼 클릭 이벤트
+        MultiStateToggleButton multiButton = (MultiStateToggleButton) this.findViewById(R.id.main_gubun_multi_toggle);
+        multiButton.setElements(R.array.gubun_array, 0);
+        gubunButton = multiButton;
+
         listView = (ListView) findViewById(R.id.main_list);
         listView.setOnItemClickListener(this);
     }
+
+    //TimePicker
+    private TimePickerDialog.OnTimeSetListener timeSetListener = new TimePickerDialog.OnTimeSetListener() {
+        @Override
+        public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
+            String msg = String.format("%02d:%02d", hourOfDay, minute);
+            main_time.setText(msg);
+        }
+    };
+
 
     @Override
     protected void onResume() {

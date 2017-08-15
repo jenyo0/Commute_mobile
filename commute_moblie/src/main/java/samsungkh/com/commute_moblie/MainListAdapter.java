@@ -9,7 +9,9 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.amulyakhare.textdrawable.TextDrawable;
+import com.amulyakhare.textdrawable.util.ColorGenerator;
 
 import java.util.ArrayList;
 
@@ -51,22 +53,29 @@ public class MainListAdapter extends ArrayAdapter<RouteVO> {
 
         MainListWrapper wrapper = (MainListWrapper) convertView.getTag();
 
+        ImageView InitialView = wrapper.initialView;
         TextView nameView = wrapper.nameView;
-        ImageView forwardView = wrapper.forwardView;
 
         final RouteVO vo = datas.get(position);
 
         nameView.setText(vo.rt_nm);
 
-        forwardView.setOnClickListener(new View.OnClickListener(){
+        //이니셜글자로 이미지 생성
+        ColorGenerator generator = ColorGenerator.MATERIAL; // or use DEFAULT
+        // generate random color
+        int color1 = generator.getRandomColor();
+        TextDrawable drawable = TextDrawable.builder().buildRound((vo.rt_nm).substring(0,1), color1);
+        InitialView.setImageDrawable(drawable);
 
-            @Override
-            public void onClick(View view) {
-                //상세정보 연결부분
-                Toast toast = Toast.makeText(context, "상세연결", Toast.LENGTH_SHORT);
-                toast.show();
-            }
-        });
+//        forwardView.setOnClickListener(new View.OnClickListener(){
+//
+//            @Override
+//            public void onClick(View view) {
+//                //상세정보 연결부분
+//                Toast toast = Toast.makeText(context, "상세연결", Toast.LENGTH_SHORT);
+//                toast.show();
+//            }
+//        });
 
         return convertView;
 
