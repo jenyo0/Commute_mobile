@@ -6,7 +6,7 @@ package samsungkh.com.commute_moblie;
 
 public class RouteVO {
 
-    int rt_id;
+    String rt_id;
     String rt_nm;
     String reg_dt;
 

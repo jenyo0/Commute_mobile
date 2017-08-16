@@ -2,13 +2,13 @@ package samsungkh.com.commute_moblie;
 
 import android.app.TimePickerDialog;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +22,8 @@ import org.honorato.multistatetogglebutton.MultiStateToggleButton;
 import java.util.ArrayList;
 import java.util.Calendar;
 
+import static samsungkh.com.commute_moblie.R.array.gubun_array;
+
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
 
     //하위호환성 문제로 support LIB 를 import해야 함.
@@ -32,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     ListView listView;
     Button main_time;
     int hour, minute;
+    String time, gubunStr;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,8 +55,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             @Override
             public void onClick(View v) {
                 String time = main_time.getText().toString();
-                Log.d("jojo", time.substring(0,2));
-                Log.d("jojo", time.substring(3));
                 if(!(time).equals("") || time != null){
                     new TimePickerDialog(MainActivity.this, timeSetListener, Integer.parseInt(time.substring(0,2)) , Integer.parseInt(time.substring(3)), false).show();
                 }else{
@@ -64,7 +65,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         //출퇴근 버튼 클릭 이벤트
         MultiStateToggleButton multiButton = (MultiStateToggleButton) this.findViewById(R.id.main_gubun_multi_toggle);
-        multiButton.setElements(R.array.gubun_array, 0);
+        multiButton.setElements(gubun_array, 0);
         gubunButton = multiButton;
 
         listView = (ListView) findViewById(R.id.main_list);
@@ -86,8 +87,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //라이프사이클 상위클래스 상속은 지우면 안됨!!!!
         super.onResume();
 
-        //최초 로딩 시 전체 리스트 뿌려주기
-        searchFun(null, null, null);
+        time = main_time.getText().toString();
+        Resources res = getResources();
+        String[] gubunArray = res.getStringArray(R.array.gubun_array);
+        gubunStr = gubunArray[gubunButton.getValue()];
+
+        //최초 로딩 시 전체 리스트 뿌려주기(단 최초 세팅된 시간 및 구분(출퇴근)값은 넘김)
+        searchFun(null, time, gubunStr);
     }
 
     //메뉴구성을 위해 자동으로 콜되는 함수
@@ -119,13 +125,13 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             searchView.setIconified(true);
 
             //로직처리부분
-            String time = main_time.getText().toString();
-            String gubun = gubunButton.getTexts().toString();
+            time = main_time.getText().toString();
+            Resources res = getResources();
+            String[] gubunArray = res.getStringArray(R.array.gubun_array);
+            gubunStr = gubunArray[gubunButton.getValue()];
 
-            Log.d("jojo", time);
-            Log.d("jojo", gubun);
-
-            searchFun(query, null, null);
+            //구분으로 보내기 위한 조회조건 처리
+            searchFun(query, time, gubunStr);
 
             return false;
         }
@@ -142,28 +148,44 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Intent intent = new Intent(this, ReadStopActivity.class);
         //detail 조회를 위한 id값 intent로 넘기기
         intent.putExtra("rt_id", datas.get(i).rt_id);
+        intent.putExtra("time", time);
+        intent.putExtra("gubun", gubunStr);
         startActivity(intent);
     }
 
     public void searchFun(String searchStr, String time, String gubun){
+
+        String timeconv = (time).replace(":","");
 
         //메인화면 리스트 뿌려질 데이터 가져오기
         DbHelper helper = new DbHelper(this);
         SQLiteDatabase db = helper.getWritableDatabase();
         Cursor cursor;
         if(searchStr == null || searchStr.equals("") ){
-            cursor = db.rawQuery("select distinct rt_id, rt_nm from tb_route order by rt_nm desc", null);
+            cursor = db.rawQuery("select distinct a.rt_id, a.rt_nm " +
+                    "from tb_route a, tb_stop b , tb_timetable c " +
+                    "where a.rt_id = b.rt_id " +
+                    "and a.rt_id = c.rt_id " +
+                    "and a.gubun = ? " +
+                    //"and replace(c.time,':','') > ? " +
+                    "order by a.rt_nm desc", new String[]{gubun});
         }else{
             cursor = db.rawQuery(
-                            "select distinct a.rt_id, a.rt_nm from tb_route a ,tb_stop b where a.rt_id = b.rt_id and (a.rt_nm like ? or b.stop_nm like ?) " +
+                            "select distinct a.rt_id, a.rt_nm " +
+                                    "from tb_route a ,tb_stop b, tb_timetable c " +
+                                    "where a.rt_id = b.rt_id " +
+                                    "and a.rt_id = c.rt_id " +
+                                    "and (a.rt_nm like ? or b.stop_nm like ?) " +
+                                    "and a.gubun = ? " +
+                                    //"and replace(c.time,':','') > ? " +
                                     "order by a.rt_nm desc"
-                    , new String[]{"%"+searchStr+"%", "%"+searchStr+"%"});
+                    , new String[]{"%"+searchStr+"%", "%"+searchStr+"%", gubun});
         }
 
-        datas = new ArrayList<>();
+        datas = new ArrayList<RouteVO>();
         while(cursor.moveToNext()){
             RouteVO vo = new RouteVO();
-            vo.rt_id = cursor.getInt(0);
+            vo.rt_id = cursor.getString(0);
             vo.rt_nm = cursor.getString(1);
             datas.add(vo);
         }
