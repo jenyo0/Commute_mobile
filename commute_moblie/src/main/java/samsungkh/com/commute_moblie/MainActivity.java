@@ -158,8 +158,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         String timeconv = (time).replace(":","");
 
         //메인화면 리스트 뿌려질 데이터 가져오기
-        DbHelper helper = new DbHelper(this);
-        SQLiteDatabase db = helper.getWritableDatabase();
+        DBHelper helper = new DBHelper(this);
+        SQLiteDatabase db = helper.openDatabase();
         Cursor cursor;
         if(searchStr == null || searchStr.equals("") ){
             cursor = db.rawQuery("select distinct a.rt_id, a.rt_nm " +
