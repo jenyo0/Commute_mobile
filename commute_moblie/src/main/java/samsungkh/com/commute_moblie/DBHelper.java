@@ -23,7 +23,7 @@ public class DBHelper{
     public SQLiteDatabase openDatabase() {
         File dbFile = context.getDatabasePath(DB_NAME);
 
-        Log.d("jojo", "SQLiteDatabase IN!!!");
+        //TODO DB Server 연결 후 DB Server의 버전과 현재 버전 비교 후 이전버전이면 기존DB삭제 후 DB Copy하는 로직
         if (!dbFile.exists()) {
             try {
                 Log.d("jojo", "dbFile does no Exists!!!!");
