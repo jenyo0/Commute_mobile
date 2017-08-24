@@ -17,12 +17,10 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TimePicker;
-import android.widget.Toast;
 
 import org.honorato.multistatetogglebutton.MultiStateToggleButton;
 
 import java.util.ArrayList;
-import java.util.Calendar;
 
 import static samsungkh.com.commute_moblie.R.array.gubun_array;
 
@@ -46,7 +44,20 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //set time button
         initTimeButton();
         //set gubun multiButton
-        initGubunButton();
+        //initGubunButton();
+
+        MultiStateToggleButton button = (MultiStateToggleButton) this.findViewById(R.id.main_gubun_multi_toggle);
+
+        button.setElements(gubun_array, 0);
+        button.setOnValueChangedListener(new MultiStateToggleButton.OnValueChangedListener(){
+
+            @Override
+            public void onValueChanged(int value) {
+                Log.d("jojo", "!!!!!!");
+            }
+        });
+
+        gubunButton = button;
 
         listView = (ListView) findViewById(R.id.main_list);
         listView.setOnItemClickListener(this);
@@ -57,11 +68,14 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Button button = (Button)this.findViewById(R.id.main_time);
         main_time = button;
 
-        Calendar calendar = Calendar.getInstance();
-        hour = calendar.get(Calendar.HOUR_OF_DAY);
-        minute = calendar.get(Calendar.MINUTE);
+//        Calendar calendar = Calendar.getInstance();
+//        hour = calendar.get(Calendar.HOUR_OF_DAY);
+//        minute = calendar.get(Calendar.MINUTE);
 
-        main_time.setText(String.format("%02d",hour)+":"+String.format("%02d",minute));
+        //최초 로딩 시 출근 기준 시간 세팅
+        main_time.setText("06:00");
+
+//        main_time.setText(String.format("%02d",hour)+":"+String.format("%02d",minute));
 
         //시간 클릭 이벤트
         findViewById(R.id.main_time).setOnClickListener(new View.OnClickListener() {
@@ -77,42 +91,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
     }
 
-    //출퇴근 버튼 클릭 이벤트
+    //출퇴근 버튼 클릭 이벤트(작동안됨)
     private void initGubunButton(){
-        final MultiStateToggleButton multiButton = (MultiStateToggleButton) this.findViewById(R.id.main_gubun_multi_toggle);
-        multiButton.setElements(gubun_array, 0);
 
-        multiButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-                String text = multiButton.getTexts().toString();
+//        Resources res = getResources();
+//        String[] gubunArray = res.getStringArray(R.array.gubun_array);
+//        gubunStr = gubunArray[gubunButton.getValue()];
+//
+//        Log.d("jojo", gubunStr);
 
-                Log.d("jojo", text);
 
-            }
-        });
-
-        gubunButton = multiButton;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        Toast toast = Toast.makeText(this, id, Toast.LENGTH_SHORT);
-
-        toast.show();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.main_gubun_multi_toggle) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
     //TimePicker
@@ -135,7 +124,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         time = main_time.getText().toString();
         Resources res = getResources();
-        String[] gubunArray = res.getStringArray(R.array.gubun_array);
+        String[] gubunArray = res.getStringArray(gubun_array);
         gubunStr = gubunArray[gubunButton.getValue()];
 
         //최초 로딩 시 전체 리스트 뿌려주기(단 최초 세팅된 시간 및 구분(출퇴근)값은 넘김)
@@ -173,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //로직처리부분
             time = main_time.getText().toString();
             Resources res = getResources();
-            String[] gubunArray = res.getStringArray(R.array.gubun_array);
+            String[] gubunArray = res.getStringArray(gubun_array);
             gubunStr = gubunArray[gubunButton.getValue()];
 
             //구분으로 보내기 위한 조회조건 처리
@@ -209,37 +198,34 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Cursor cursor;
         if(searchStr == null || searchStr.equals("") ){
             cursor = db.rawQuery(
-                    "SELECT DISTINCT A.ROUTE_ID, A.ROUTE_DESC "+
+                    "SELECT DISTINCT A.ROUTE_ID, A.ROUTE_DESC, Z.GUGAN "+
                     "FROM CM_ROUTE A, CM_TIMETABLE B "+
-                    "WHERE A.ROUTE_ID = B.ROUTE_ID "+
+                    ",(SELECT A.ROUTE_ID, D.STOP_DESC ||'~'||C.STOP_DESC AS GUGAN FROM "+
+                    " (SELECT A.ROUTE_ID ,MAX(ROUTE_SEQ) MAX_STOP	FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) A, "+
+                    " (SELECT A.ROUTE_ID ,MIN(ROUTE_SEQ) MIN_STOP FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) B, "+
+                    " CM_ROUTE C, CM_ROUTE D "+
+                    " WHERE 1=1 AND A.ROUTE_ID = C.ROUTE_ID AND B.ROUTE_ID = C.ROUTE_ID AND C.ROUTE_ID = D.ROUTE_ID AND A.MAX_STOP = C.ROUTE_SEQ AND B.MIN_STOP = D.ROUTE_SEQ) Z "+
+            "WHERE A.ROUTE_ID = B.ROUTE_ID "+
+                    "AND A.ROUTE_ID = Z.ROUTE_ID "+
                     "AND B.DIRECTION = ?  "+
                     "AND cast(replace(B.DEPART_TIME,':','') as integer) > cast(? as integer) "+
                     "ORDER BY A.ROUTE_DESC ASC ", new String[]{gubun, timeconv});
-//                    "select distinct a.rt_id, a.rt_nm " +
-//                    "from tb_route a, tb_stop b , tb_timetable c " +
-//                    "where a.rt_id = b.rt_id " +
-//                    "and a.rt_id = c.rt_id " +
-//                    "and a.gubun = ? " +
-//                    "and cast(replace(c.time,':','') as integer) > cast(? as integer) " +
-//                    "order by a.rt_nm desc", new String[]{gubun, timeconv});
         }else{
             cursor = db.rawQuery(
-                    "SELECT DISTINCT A.ROUTE_ID, A.ROUTE_DESC "+
+                    "SELECT DISTINCT A.ROUTE_ID, A.ROUTE_DESC, Z.GUGAN  "+
                             "FROM CM_ROUTE A, CM_TIMETABLE B "+
+                            ",(SELECT A.ROUTE_ID, D.STOP_DESC ||'~'||C.STOP_DESC AS GUGAN FROM "+
+                            " (SELECT A.ROUTE_ID ,MAX(ROUTE_SEQ) MAX_STOP	FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) A, "+
+                            " (SELECT A.ROUTE_ID ,MIN(ROUTE_SEQ) MIN_STOP FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) B, "+
+                            " CM_ROUTE C, CM_ROUTE D "+
+                            " WHERE 1=1 AND A.ROUTE_ID = C.ROUTE_ID AND B.ROUTE_ID = C.ROUTE_ID AND C.ROUTE_ID = D.ROUTE_ID AND A.MAX_STOP = C.ROUTE_SEQ AND B.MIN_STOP = D.ROUTE_SEQ) Z "+
                             "WHERE A.ROUTE_ID = B.ROUTE_ID "+
+                            "AND A.ROUTE_ID = Z.ROUTE_ID "+
                             "AND (A.ROUTE_DESC LIKE ?  OR A.STOP_DESC LIKE ? ) "+
                             "AND B.DIRECTION = ?  "+
                             "AND cast(replace(B.DEPART_TIME,':','') as integer) > cast(? as integer) "+
                             "ORDER BY A.ROUTE_DESC ASC "
             , new String[]{"%"+searchStr+"%", "%"+searchStr+"%", gubun, timeconv});
-//                            "select distinct a.rt_id, a.rt_nm " +
-//                                    "from tb_route a ,tb_stop b, tb_timetable c " +
-//                                    "where a.rt_id = b.rt_id " +
-//                                    "and a.rt_id = c.rt_id " +
-//                                    "and (a.rt_nm like ? or b.stop_nm like ?) " +
-//                                    "and a.gubun = ? " +
-//                                    "and cast(replace(c.time,':','') as integer) > cast(? as integer) " +
-//                                    "order by a.rt_nm desc"
         }
 
         datas = new ArrayList<RouteVO>();
@@ -247,6 +233,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             RouteVO vo = new RouteVO();
             vo.rt_id = cursor.getString(0);
             vo.rt_nm = cursor.getString(1);
+            vo.gugan = cursor.getString(2);
             datas.add(vo);
         }
 

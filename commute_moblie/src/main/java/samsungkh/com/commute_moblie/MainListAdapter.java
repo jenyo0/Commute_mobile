@@ -55,10 +55,12 @@ public class MainListAdapter extends ArrayAdapter<RouteVO> {
 
         ImageView InitialView = wrapper.initialView;
         TextView nameView = wrapper.nameView;
+        TextView descView = wrapper.descView;
 
         final RouteVO vo = datas.get(position);
 
         nameView.setText(vo.rt_nm);
+        descView.setText(vo.gugan);
 
         //이니셜글자로 이미지 생성
         ColorGenerator generator = ColorGenerator.MATERIAL; // or use DEFAULT

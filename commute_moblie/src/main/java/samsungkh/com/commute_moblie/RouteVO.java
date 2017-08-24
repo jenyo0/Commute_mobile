@@ -8,6 +8,6 @@ public class RouteVO {
 
     String rt_id;
     String rt_nm;
-    String reg_dt;
+    String gugan;
 
 }
