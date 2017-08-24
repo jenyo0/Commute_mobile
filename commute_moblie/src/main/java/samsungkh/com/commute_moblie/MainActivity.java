@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -16,6 +17,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TimePicker;
+import android.widget.Toast;
 
 import org.honorato.multistatetogglebutton.MultiStateToggleButton;
 
@@ -41,6 +43,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //set time button
+        initTimeButton();
+        //set gubun multiButton
+        initGubunButton();
+
+        listView = (ListView) findViewById(R.id.main_list);
+        listView.setOnItemClickListener(this);
+    }
+
+    //set time button
+    private void initTimeButton(){
         Button button = (Button)this.findViewById(R.id.main_time);
         main_time = button;
 
@@ -62,14 +75,44 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 }
             }
         });
+    }
 
-        //출퇴근 버튼 클릭 이벤트
-        MultiStateToggleButton multiButton = (MultiStateToggleButton) this.findViewById(R.id.main_gubun_multi_toggle);
+    //출퇴근 버튼 클릭 이벤트
+    private void initGubunButton(){
+        final MultiStateToggleButton multiButton = (MultiStateToggleButton) this.findViewById(R.id.main_gubun_multi_toggle);
         multiButton.setElements(gubun_array, 0);
-        gubunButton = multiButton;
 
-        listView = (ListView) findViewById(R.id.main_list);
-        listView.setOnItemClickListener(this);
+        multiButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                String text = multiButton.getTexts().toString();
+
+                Log.d("jojo", text);
+
+            }
+        });
+
+        gubunButton = multiButton;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
+        int id = item.getItemId();
+
+        Toast toast = Toast.makeText(this, id, Toast.LENGTH_SHORT);
+
+        toast.show();
+
+        //noinspection SimplifiableIfStatement
+        if (id == R.id.main_gubun_multi_toggle) {
+            return true;
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
     //TimePicker
@@ -78,6 +121,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
             String msg = String.format("%02d:%02d", hourOfDay, minute);
             main_time.setText(msg);
+
+            time = main_time.getText().toString();
+            searchFun(null, time, gubunStr);
         }
     };
 
@@ -162,24 +208,38 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         SQLiteDatabase db = helper.openDatabase();
         Cursor cursor;
         if(searchStr == null || searchStr.equals("") ){
-            cursor = db.rawQuery("select distinct a.rt_id, a.rt_nm " +
-                    "from tb_route a, tb_stop b , tb_timetable c " +
-                    "where a.rt_id = b.rt_id " +
-                    "and a.rt_id = c.rt_id " +
-                    "and a.gubun = ? " +
-                    //"and replace(c.time,':','') > ? " +
-                    "order by a.rt_nm desc", new String[]{gubun});
+            cursor = db.rawQuery(
+                    "SELECT DISTINCT A.ROUTE_ID, A.ROUTE_DESC "+
+                    "FROM CM_ROUTE A, CM_TIMETABLE B "+
+                    "WHERE A.ROUTE_ID = B.ROUTE_ID "+
+                    "AND B.DIRECTION = ?  "+
+                    "AND cast(replace(B.DEPART_TIME,':','') as integer) > cast(? as integer) "+
+                    "ORDER BY A.ROUTE_DESC ASC ", new String[]{gubun, timeconv});
+//                    "select distinct a.rt_id, a.rt_nm " +
+//                    "from tb_route a, tb_stop b , tb_timetable c " +
+//                    "where a.rt_id = b.rt_id " +
+//                    "and a.rt_id = c.rt_id " +
+//                    "and a.gubun = ? " +
+//                    "and cast(replace(c.time,':','') as integer) > cast(? as integer) " +
+//                    "order by a.rt_nm desc", new String[]{gubun, timeconv});
         }else{
             cursor = db.rawQuery(
-                            "select distinct a.rt_id, a.rt_nm " +
-                                    "from tb_route a ,tb_stop b, tb_timetable c " +
-                                    "where a.rt_id = b.rt_id " +
-                                    "and a.rt_id = c.rt_id " +
-                                    "and (a.rt_nm like ? or b.stop_nm like ?) " +
-                                    "and a.gubun = ? " +
-                                    //"and replace(c.time,':','') > ? " +
-                                    "order by a.rt_nm desc"
-                    , new String[]{"%"+searchStr+"%", "%"+searchStr+"%", gubun});
+                    "SELECT DISTINCT A.ROUTE_ID, A.ROUTE_DESC "+
+                            "FROM CM_ROUTE A, CM_TIMETABLE B "+
+                            "WHERE A.ROUTE_ID = B.ROUTE_ID "+
+                            "AND (A.ROUTE_DESC LIKE ?  OR A.STOP_DESC LIKE ? ) "+
+                            "AND B.DIRECTION = ?  "+
+                            "AND cast(replace(B.DEPART_TIME,':','') as integer) > cast(? as integer) "+
+                            "ORDER BY A.ROUTE_DESC ASC "
+            , new String[]{"%"+searchStr+"%", "%"+searchStr+"%", gubun, timeconv});
+//                            "select distinct a.rt_id, a.rt_nm " +
+//                                    "from tb_route a ,tb_stop b, tb_timetable c " +
+//                                    "where a.rt_id = b.rt_id " +
+//                                    "and a.rt_id = c.rt_id " +
+//                                    "and (a.rt_nm like ? or b.stop_nm like ?) " +
+//                                    "and a.gubun = ? " +
+//                                    "and cast(replace(c.time,':','') as integer) > cast(? as integer) " +
+//                                    "order by a.rt_nm desc"
         }
 
         datas = new ArrayList<RouteVO>();
