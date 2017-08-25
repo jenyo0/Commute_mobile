@@ -9,7 +9,6 @@ import android.os.Bundle;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -19,10 +18,11 @@ import android.widget.ListView;
 import android.widget.TimePicker;
 
 import org.honorato.multistatetogglebutton.MultiStateToggleButton;
+import org.honorato.multistatetogglebutton.ToggleButton;
 
 import java.util.ArrayList;
 
-import static samsungkh.com.commute_moblie.R.array.gubun_array;
+import static samsungkh.com.commute_moblie.R.array.planets_array;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
 
@@ -36,6 +36,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     int hour, minute;
     String time, gubunStr;
 
+    Resources res;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -44,20 +45,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         //set time button
         initTimeButton();
         //set gubun multiButton
-        //initGubunButton();
-
-        MultiStateToggleButton button = (MultiStateToggleButton) this.findViewById(R.id.main_gubun_multi_toggle);
-
-        button.setElements(gubun_array, 0);
-        button.setOnValueChangedListener(new MultiStateToggleButton.OnValueChangedListener(){
-
-            @Override
-            public void onValueChanged(int value) {
-                Log.d("jojo", "!!!!!!");
-            }
-        });
-
-        gubunButton = button;
+        initGubunButton();
 
         listView = (ListView) findViewById(R.id.main_list);
         listView.setOnItemClickListener(this);
@@ -68,13 +56,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Button button = (Button)this.findViewById(R.id.main_time);
         main_time = button;
 
-//        Calendar calendar = Calendar.getInstance();
-//        hour = calendar.get(Calendar.HOUR_OF_DAY);
-//        minute = calendar.get(Calendar.MINUTE);
-
         //최초 로딩 시 출근 기준 시간 세팅
         main_time.setText("06:00");
 
+//        Calendar calendar = Calendar.getInstance();
+//        hour = calendar.get(Calendar.HOUR_OF_DAY);
+//        minute = calendar.get(Calendar.MINUTE);
 //        main_time.setText(String.format("%02d",hour)+":"+String.format("%02d",minute));
 
         //시간 클릭 이벤트
@@ -91,17 +78,22 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         });
     }
 
-    //출퇴근 버튼 클릭 이벤트(작동안됨)
+    //출퇴근 버튼 클릭 이벤트
     private void initGubunButton(){
 
+        gubunButton = (MultiStateToggleButton)findViewById(R.id.main_gubun_multi_toggle);
+        gubunButton.setValue(0);
+        gubunButton.setOnValueChangedListener(new ToggleButton.OnValueChangedListener() {
+            @Override
+            public void onValueChanged(int position) {
 
-//        Resources res = getResources();
-//        String[] gubunArray = res.getStringArray(R.array.gubun_array);
-//        gubunStr = gubunArray[gubunButton.getValue()];
-//
-//        Log.d("jojo", gubunStr);
+                time = main_time.getText().toString();
+                String[] gubunArray = res.getStringArray(planets_array);
+                gubunStr = gubunArray[gubunButton.getValue()];
 
-
+                searchFun(null, time, gubunStr);
+            }
+        });
     }
 
     //TimePicker
@@ -112,6 +104,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             main_time.setText(msg);
 
             time = main_time.getText().toString();
+            String[] gubunArray = res.getStringArray(planets_array);
+            gubunStr = gubunArray[gubunButton.getValue()];
             searchFun(null, time, gubunStr);
         }
     };
@@ -123,8 +117,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onResume();
 
         time = main_time.getText().toString();
-        Resources res = getResources();
-        String[] gubunArray = res.getStringArray(gubun_array);
+        res = getResources();
+        String[] gubunArray = res.getStringArray(planets_array);
         gubunStr = gubunArray[gubunButton.getValue()];
 
         //최초 로딩 시 전체 리스트 뿌려주기(단 최초 세팅된 시간 및 구분(출퇴근)값은 넘김)
@@ -161,8 +155,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             //로직처리부분
             time = main_time.getText().toString();
-            Resources res = getResources();
-            String[] gubunArray = res.getStringArray(gubun_array);
+            String[] gubunArray = res.getStringArray(planets_array);
             gubunStr = gubunArray[gubunButton.getValue()];
 
             //구분으로 보내기 위한 조회조건 처리

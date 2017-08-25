@@ -6,7 +6,7 @@
     <string name="main_back_end">종료할려면 한번 더 누르세요</string>
     <string name="title_activity_read_stop">ReadStopActivity</string>
 
-    <string-array name="gubun_array">
+    <string-array name="planets_array">
         <item>출근</item>
         <item>퇴근</item>
         <item>셔틀</item>

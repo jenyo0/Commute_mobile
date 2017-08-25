@@ -34,7 +34,7 @@
             android:layout_weight="1.5"
             android:layout_height="wrap_content"
             android:layout_gravity="right"
-            app:values="@array/gubun_array"
+            app:values="@array/planets_array"
             app:mstbPrimaryColor="@color/colorPrimary"
             app:mstbSecondaryColor="@color/white"
 
