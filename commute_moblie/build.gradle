@@ -41,4 +41,5 @@ dependencies {
     testCompile 'junit:junit:4.12'
     compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
     compile 'org.honorato.multistatetogglebutton:multistatetogglebutton:0.2.2'
+    compile 'com.miguelcatalan:materialsearchview:1.4.0'
 }

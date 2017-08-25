@@ -110,7 +110,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }
     };
 
-
     @Override
     protected void onResume() {
         //라이프사이클 상위클래스 상속은 지우면 안됨!!!!
@@ -174,6 +173,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         Intent intent = new Intent(this, ReadStopActivity.class);
+
         //detail 조회를 위한 id값 intent로 넘기기
         intent.putExtra("rt_id", datas.get(i).rt_id);
         intent.putExtra("time", time);
@@ -183,7 +183,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     public void searchFun(String searchStr, String time, String gubun){
 
-        String timeconv = (time).replace(":","");
+        String timeStr = (time).replace(":","");
 
         //메인화면 리스트 뿌려질 데이터 가져오기
         DBHelper helper = new DBHelper(this);
@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             cursor = db.rawQuery(
                     "SELECT DISTINCT A.ROUTE_ID, A.ROUTE_DESC, Z.GUGAN "+
                     "FROM CM_ROUTE A, CM_TIMETABLE B "+
-                    ",(SELECT A.ROUTE_ID, D.STOP_DESC ||'~'||C.STOP_DESC AS GUGAN FROM "+
+                    ",(SELECT A.ROUTE_ID, D.STOP_DESC ||' ~ '||C.STOP_DESC AS GUGAN FROM "+
                     " (SELECT A.ROUTE_ID ,MAX(ROUTE_SEQ) MAX_STOP	FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) A, "+
                     " (SELECT A.ROUTE_ID ,MIN(ROUTE_SEQ) MIN_STOP FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) B, "+
                     " CM_ROUTE C, CM_ROUTE D "+
@@ -202,12 +202,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     "AND A.ROUTE_ID = Z.ROUTE_ID "+
                     "AND B.DIRECTION = ?  "+
                     "AND cast(replace(B.DEPART_TIME,':','') as integer) > cast(? as integer) "+
-                    "ORDER BY A.ROUTE_DESC ASC ", new String[]{gubun, timeconv});
+                    "ORDER BY A.ROUTE_DESC ASC ", new String[]{gubun, timeStr});
         }else{
             cursor = db.rawQuery(
                     "SELECT DISTINCT A.ROUTE_ID, A.ROUTE_DESC, Z.GUGAN  "+
                             "FROM CM_ROUTE A, CM_TIMETABLE B "+
-                            ",(SELECT A.ROUTE_ID, D.STOP_DESC ||'~'||C.STOP_DESC AS GUGAN FROM "+
+                            ",(SELECT A.ROUTE_ID, D.STOP_DESC ||' ~ '||C.STOP_DESC AS GUGAN FROM "+
                             " (SELECT A.ROUTE_ID ,MAX(ROUTE_SEQ) MAX_STOP	FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) A, "+
                             " (SELECT A.ROUTE_ID ,MIN(ROUTE_SEQ) MIN_STOP FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) B, "+
                             " CM_ROUTE C, CM_ROUTE D "+
@@ -218,9 +218,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             "AND B.DIRECTION = ?  "+
                             "AND cast(replace(B.DEPART_TIME,':','') as integer) > cast(? as integer) "+
                             "ORDER BY A.ROUTE_DESC ASC "
-            , new String[]{"%"+searchStr+"%", "%"+searchStr+"%", gubun, timeconv});
+            , new String[]{"%"+searchStr+"%", "%"+searchStr+"%", gubun, timeStr});
         }
 
+        //추출데이터 SET
         datas = new ArrayList<RouteVO>();
         while(cursor.moveToNext()){
             RouteVO vo = new RouteVO();
