@@ -6,7 +6,7 @@ package samsungkh.com.commute_moblie;
 
 public class TimeVO {
 
-    int rt_id;
+    String rt_id;
     String time;
     String cnt;
 

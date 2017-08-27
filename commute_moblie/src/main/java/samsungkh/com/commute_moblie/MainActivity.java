@@ -176,6 +176,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         //detail 조회를 위한 id값 intent로 넘기기
         intent.putExtra("rt_id", datas.get(i).rt_id);
+        intent.putExtra("rt_nm", datas.get(i).rt_nm);
         intent.putExtra("time", time);
         intent.putExtra("gubun", gubunStr);
         startActivity(intent);
