@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-public class DBHelper{
+public class DBHelper {
 
     private static final String DB_NAME = "bus.db";
 

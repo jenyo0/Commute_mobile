@@ -5,12 +5,10 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -41,12 +39,10 @@ public class ReadStopActivity extends AppCompatActivity implements AdapterView.O
         time = intent.getExtras().getString("time");
         gubun = intent.getExtras().getString("gubun");
 
-        Log.d("jojo", route_name);
-
         this.setTitle(route_name);
 
-        Toast toast1 = Toast.makeText(this, route_id +", " + route_name +", "+ time +", "+ gubun, Toast.LENGTH_SHORT);
-        toast1.show();
+//        Toast toast1 = Toast.makeText(this, route_id +", " + route_name +", "+ time +", "+ gubun, Toast.LENGTH_SHORT);
+//        toast1.show();
 
         listView = (ListView) findViewById(R.id.stop_list);
         listView.setOnItemClickListener(this);
@@ -57,7 +53,7 @@ public class ReadStopActivity extends AppCompatActivity implements AdapterView.O
 
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-        Intent intent = new Intent(this, StopMapActivity.class);
+        Intent intent = new Intent(this, MapActivity.class);
         //detail 조회를 위한 id값 intent로 넘기기
         intent.putExtra("stop_id", datas.get(i).stop_id);
         intent.putExtra("stop_desc", datas.get(i).stop_desc);

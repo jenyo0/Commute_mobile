@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">NanoCity 출퇴근</string>
     <string name="app_pkg_name">com.commute_mobile</string>
+    <string name="str_done">완료</string>
 
     <string name="main_search_hint">검색어를 입력하세요</string>
     <string name="main_back_end">종료할려면 한번 더 누르세요</string>
