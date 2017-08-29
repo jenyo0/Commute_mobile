@@ -14,7 +14,6 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewGroup.LayoutParams;
 import android.widget.Toast;
 
 import com.nhn.android.maps.NMapActivity;
@@ -82,22 +81,11 @@ public class MapActivity extends NMapActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
-
-        // if (USE_XML_LAYOUT) {
-        //     setContentView(R.layout.main);
-             mMapView = (NMapView)findViewById(R.id.mapView);
-        // } else {
-            // create map view
-            mMapView = new NMapView(this);
-
-            // create parent view to rotate map view
-            mMapContainerView = new MapContainerView(this);
-            mMapContainerView.addView(mMapView);
-
-            // set the activity content to the parent view
-            setContentView(mMapContainerView);
-        // }
+//        mMapView = new NMapView(this);
+        setContentView(R.layout.activity_map);
+        mMapView = (NMapView) findViewById(R.id.mapView);
 
         // set a registered Client Id for Open MapViewer Library
         mMapView.setClientId(CLIENT_ID);
@@ -118,31 +106,31 @@ public class MapActivity extends NMapActivity {
         mMapController = mMapView.getMapController();
 
         // use built in zoom controls
-        NMapView.LayoutParams lp = new NMapView.LayoutParams(LayoutParams.WRAP_CONTENT,
-                LayoutParams.WRAP_CONTENT, NMapView.LayoutParams.BOTTOM_RIGHT);
-        mMapView.setBuiltInZoomControls(true, lp);
+//        NMapView.LayoutParams lp = new NMapView.LayoutParams(LayoutParams.WRAP_CONTENT,
+//                LayoutParams.WRAP_CONTENT, NMapView.LayoutParams.BOTTOM_RIGHT);
+//        mMapView.setBuiltInZoomControls(true, lp);
 
         // create resource provider
         mMapViewerResourceProvider = new NMapViewerResourceProvider(this);
-
-        // set data provider listener
+//
+//        // set data provider listener
         super.setMapDataProviderListener(onDataProviderListener);
-
-        // create overlay manager
+//
+//        // create overlay manager
         mOverlayManager = new NMapOverlayManager(this, mMapView, mMapViewerResourceProvider);
-        // register callout overlay listener to customize it.
+//        // register callout overlay listener to customize it.
         mOverlayManager.setOnCalloutOverlayListener(onCalloutOverlayListener);
-        // register callout overlay view listener to customize it.
+//        // register callout overlay view listener to customize it.
         mOverlayManager.setOnCalloutOverlayViewListener(onCalloutOverlayViewListener);
-
-        // location manager
+//
+//        // location manager
         mMapLocationManager = new NMapLocationManager(this);
         mMapLocationManager.setOnLocationChangeListener(onMyLocationChangeListener);
-
-        // compass manager
+//
+//        // compass manager
         mMapCompassManager = new NMapCompassManager(this);
-
-        // create my location overlay
+//
+//        // create my location overlay
         mMyLocationOverlay = mOverlayManager.createMyLocationOverlay(mMapLocationManager, mMapCompassManager);
     }
 
@@ -155,6 +143,8 @@ public class MapActivity extends NMapActivity {
         stop_desc = intent.getExtras().getString("stop_desc");
         longitude = intent.getExtras().getString("longitude");
         latitude = intent.getExtras().getString("latitude");
+
+        this.setTitle(stop_desc);
 
         Log.d("jojo", "ON START");
         // String str = "Test";
@@ -193,9 +183,6 @@ public class MapActivity extends NMapActivity {
         // 일반 위치 마커 객체 선언
         NMapPOIdata poiData = new NMapPOIdata(1, mMapViewerResourceProvider);
         poiData.beginPOIdata(1);
-
-
-        Log.d("jojo", "BUS DATA OverLay");
 
         // 일반 위치 마커 및 경로 그리기 (for문으로 갯수만큼 구현)
         poiData.addPOIitem(Double.parseDouble(longitude), Double.parseDouble(latitude), stop_desc, markerId, 0);
@@ -673,11 +660,6 @@ public class MapActivity extends NMapActivity {
 
             case R.id.action_my_location:
                 startMyLocation();
-                return true;
-
-            case R.id.action_new_activity:
-                Intent intent = new Intent(this, FragmentMapActivity.class);
-                startActivity(intent);
                 return true;
 
             case R.id.action_scale_factor:
