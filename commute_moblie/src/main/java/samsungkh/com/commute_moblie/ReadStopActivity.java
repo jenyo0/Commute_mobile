@@ -7,6 +7,7 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -47,6 +48,17 @@ public class ReadStopActivity extends AppCompatActivity implements AdapterView.O
         listView = (ListView) findViewById(R.id.stop_list);
         listView.setOnItemClickListener(this);
 
+        findViewById(R.id.stop_map_button).setOnClickListener(
+                new Button.OnClickListener(){
+                    public void onClick(View v){
+                        Intent intel_act = new Intent(ReadStopActivity.this, MapActivity.class);
+                       intel_act.putExtra("stop_datas", datas);
+                        startActivity(intel_act);
+                    }
+                }
+        );
+
+
         serchStopList(route_id);
         serchTimeList(route_id, time, gubun);
     }
@@ -54,15 +66,20 @@ public class ReadStopActivity extends AppCompatActivity implements AdapterView.O
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         Intent intent = new Intent(this, MapActivity.class);
-        //detail 조회를 위한 id값 intent로 넘기기
-        intent.putExtra("stop_id", datas.get(i).stop_id);
-        intent.putExtra("stop_desc", datas.get(i).stop_desc);
 
-        String[] location = datas.get(i).gps.split(",");
-        String longitude = location[0]; // 경도
-        String latitude = location[1]; // 위도
-        intent.putExtra("longitude", longitude);
-        intent.putExtra("latitude", latitude);
+        ArrayList<StopVO> data_point= new ArrayList<StopVO>();
+        data_point.add(datas.get(i));
+        intent.putExtra("stop_datas", data_point);
+
+        //detail 조회를 위한 id값 intent로 넘기기
+        //intent.putExtra("stop_id", datas.get(i).stop_id);
+        //intent.putExtra("stop_desc", datas.get(i).stop_desc);
+
+        //String[] location = datas.get(i).gps.split(",");
+        //String longitude = location[0]; // 경도
+        //String latitude = location[1]; // 위도
+        //intent.putExtra("longitude", longitude);
+        //intent.putExtra("latitude", latitude);
 
         startActivity(intent);
     }
@@ -72,10 +89,14 @@ public class ReadStopActivity extends AppCompatActivity implements AdapterView.O
         SQLiteDatabase db = helper.openDatabase();
         Cursor cursor;
 
-        cursor = db.rawQuery("SELECT DISTINCT DEPART_TIME "
-                + " FROM CM_TIMETABLE "
-                + " WHERE ROUTE_ID=? AND DIRECTION=? AND "
-                + "cast(replace(DEPART_TIME,':','') as integer) > cast(replace(?,':','') as integer) "
+        cursor = db.rawQuery("SELECT DISTINCT DEPART_TIME || "
+                        + " (case WHEN MON_FLAG='Y' "
+                        + " then ' (월-'||mon_time||')' "
+                        +" ELSE ''"
+                        +" END )"
+                        + " FROM CM_TIMETABLE "
+                        + " WHERE ROUTE_ID=? AND DIRECTION=? AND "
+                        + "cast(replace(DEPART_TIME,':','') as integer) > cast(replace(?,':','') as integer) "
                         + "ORDER BY cast(replace(DEPART_TIME,':','') as integer)",
                 new String[]{route_id, gubun, time});
 

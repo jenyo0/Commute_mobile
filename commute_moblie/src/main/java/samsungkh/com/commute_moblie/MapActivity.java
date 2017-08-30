@@ -14,6 +14,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewGroup.LayoutParams;
 import android.widget.Toast;
 
 import com.nhn.android.maps.NMapActivity;
@@ -28,11 +29,15 @@ import com.nhn.android.maps.nmapmodel.NMapError;
 import com.nhn.android.maps.nmapmodel.NMapPlacemark;
 import com.nhn.android.maps.overlay.NMapPOIdata;
 import com.nhn.android.maps.overlay.NMapPOIitem;
+import com.nhn.android.maps.overlay.NMapPathData;
 import com.nhn.android.mapviewer.overlay.NMapCalloutCustomOverlay;
 import com.nhn.android.mapviewer.overlay.NMapCalloutOverlay;
 import com.nhn.android.mapviewer.overlay.NMapMyLocationOverlay;
 import com.nhn.android.mapviewer.overlay.NMapOverlayManager;
 import com.nhn.android.mapviewer.overlay.NMapPOIdataOverlay;
+import com.nhn.android.mapviewer.overlay.NMapPathDataOverlay;
+
+import java.util.ArrayList;
 
 public class MapActivity extends NMapActivity {
 
@@ -50,6 +55,8 @@ public class MapActivity extends NMapActivity {
     private String stop_desc;
     private String longitude;
     private String latitude;
+    private ArrayList<StopVO> stop_datas = new ArrayList<StopVO>();
+    private String[] location ;
 
     private static final NGeoPoint NMAP_LOCATION_DEFAULT = new NGeoPoint(126.978371, 37.5666091);
     private static final int NMAP_ZOOMLEVEL_DEFAULT = 11;
@@ -81,11 +88,22 @@ public class MapActivity extends NMapActivity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-
         super.onCreate(savedInstanceState);
-//        mMapView = new NMapView(this);
-        setContentView(R.layout.activity_map);
-        mMapView = (NMapView) findViewById(R.id.mapView);
+
+        // if (USE_XML_LAYOUT) {
+        //     setContentView(R.layout.main);
+             mMapView = (NMapView)findViewById(R.id.mapView);
+        // } else {
+            // create map view
+            mMapView = new NMapView(this);
+
+            // create parent view to rotate map view
+            mMapContainerView = new MapContainerView(this);
+            mMapContainerView.addView(mMapView);
+
+            // set the activity content to the parent view
+            setContentView(mMapContainerView);
+        // }
 
         // set a registered Client Id for Open MapViewer Library
         mMapView.setClientId(CLIENT_ID);
@@ -106,31 +124,31 @@ public class MapActivity extends NMapActivity {
         mMapController = mMapView.getMapController();
 
         // use built in zoom controls
-//        NMapView.LayoutParams lp = new NMapView.LayoutParams(LayoutParams.WRAP_CONTENT,
-//                LayoutParams.WRAP_CONTENT, NMapView.LayoutParams.BOTTOM_RIGHT);
-//        mMapView.setBuiltInZoomControls(true, lp);
+        NMapView.LayoutParams lp = new NMapView.LayoutParams(LayoutParams.WRAP_CONTENT,
+                LayoutParams.WRAP_CONTENT, NMapView.LayoutParams.BOTTOM_RIGHT);
+        mMapView.setBuiltInZoomControls(true, lp);
 
         // create resource provider
         mMapViewerResourceProvider = new NMapViewerResourceProvider(this);
-//
-//        // set data provider listener
+
+        // set data provider listener
         super.setMapDataProviderListener(onDataProviderListener);
-//
-//        // create overlay manager
+
+        // create overlay manager
         mOverlayManager = new NMapOverlayManager(this, mMapView, mMapViewerResourceProvider);
-//        // register callout overlay listener to customize it.
+        // register callout overlay listener to customize it.
         mOverlayManager.setOnCalloutOverlayListener(onCalloutOverlayListener);
-//        // register callout overlay view listener to customize it.
+        // register callout overlay view listener to customize it.
         mOverlayManager.setOnCalloutOverlayViewListener(onCalloutOverlayViewListener);
-//
-//        // location manager
+
+        // location manager
         mMapLocationManager = new NMapLocationManager(this);
         mMapLocationManager.setOnLocationChangeListener(onMyLocationChangeListener);
-//
-//        // compass manager
+
+        // compass manager
         mMapCompassManager = new NMapCompassManager(this);
-//
-//        // create my location overlay
+
+        // create my location overlay
         mMyLocationOverlay = mOverlayManager.createMyLocationOverlay(mMapLocationManager, mMapCompassManager);
     }
 
@@ -139,14 +157,14 @@ public class MapActivity extends NMapActivity {
         super.onStart();
 
         Intent intent = getIntent();
-        stop_id = intent.getExtras().getString("stop_id");
-        stop_desc = intent.getExtras().getString("stop_desc");
-        longitude = intent.getExtras().getString("longitude");
-        latitude = intent.getExtras().getString("latitude");
 
-        this.setTitle(stop_desc);
+        stop_datas = (ArrayList<StopVO>)intent.getSerializableExtra("stop_datas");
 
-        Log.d("jojo", "ON START");
+        // stop_id = intent.getExtras().getString("stop_id");
+        //stop_desc = intent.getExtras().getString("stop_desc");
+        //longitude = intent.getExtras().getString("longitude");
+        //latitude = intent.getExtras().getString("latitude");
+
         // String str = "Test";
         // Toast.makeText(MapActivity.this, str, Toast.LENGTH_SHORT).show();
         // startMyLocation(); // 내 위치 찾기
@@ -154,7 +172,7 @@ public class MapActivity extends NMapActivity {
         // testPathDataOverlay(); // 경로 그리기
         // testPOIdataOverlay(); // 일반 위치 마커 찍기
 
-        BusDataOverlay();
+         BusDataOverlay();
     }
 
     @Override
@@ -179,19 +197,47 @@ public class MapActivity extends NMapActivity {
 	/* 버스노선 마킹 - 170828 이홍관 */
     private void BusDataOverlay() {
         int markerId = NMapPOIflagType.PIN; // Markers for POI item
+        int busStopCount = stop_datas.size() ;
 
-        // 일반 위치 마커 객체 선언
-        NMapPOIdata poiData = new NMapPOIdata(1, mMapViewerResourceProvider);
-        poiData.beginPOIdata(1);
 
-        // 일반 위치 마커 및 경로 그리기 (for문으로 갯수만큼 구현)
-        poiData.addPOIitem(Double.parseDouble(longitude), Double.parseDouble(latitude), stop_desc, markerId, 0);
+            // 일반 위치 마커 객체 선언
+        NMapPOIdata poiData = new NMapPOIdata(busStopCount, mMapViewerResourceProvider);
+        poiData.beginPOIdata(busStopCount);
+
+
+        // 경로 그리기 객체 선언
+        NMapPathData pathData = new NMapPathData(busStopCount);
+        pathData.initPathData();
+
+
+        Log.d("jojo", "BUS DATA OverLay");
+
+        for(int i= 0 ; i <stop_datas.size() ; i++) {
+            stop_id = stop_datas.get(i).stop_id;
+            stop_desc = stop_datas.get(i).stop_desc;
+            location = stop_datas.get(i).gps.split(",");
+            longitude = location[0];
+            latitude = location[1];
+
+            // 일반 위치 마커 및 경로 그리기 (for문으로 갯수만큼 구현)
+            poiData.addPOIitem(Double.parseDouble(longitude), Double.parseDouble(latitude), stop_desc, markerId, 0);
+            pathData.addPathPoint(Double.parseDouble(longitude), Double.parseDouble(latitude),0);
+        }
 
         poiData.endPOIdata(); // 일반 위치 마커 데이터 받기 종료
+        pathData.endPathData(); // 경로 그리기 데이터 받기 종료
+
+        // 경로 그리기 구현
+
+        NMapPathDataOverlay pathDataOverlay = mOverlayManager.createPathDataOverlay(pathData);
+        if (pathDataOverlay != null) {
+            pathDataOverlay.showAllPathData(0); // show all path data
+        }
 
         NMapPOIdataOverlay poiDataOverlay = mOverlayManager.createPOIdataOverlay(poiData, null); // create POI data overlay
         poiDataOverlay.setOnStateChangeListener(onPOIdataStateChangeListener); // set event listener to the overlay
         poiDataOverlay.selectPOIitem(0, true); // select an item
+
     }
 
 

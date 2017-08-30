@@ -6,6 +6,8 @@
     <string name="main_search_hint">검색어를 입력하세요</string>
     <string name="main_back_end">종료할려면 한번 더 누르세요</string>
     <string name="title_activity_read_stop">ReadStopActivity</string>
+    <string name="total_route">전체노선보기</string>
+
 
     <string-array name="planets_array">
         <item>출근</item>
