@@ -25,14 +25,14 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_gravity="left"
-                android:layout_weight="0.3"
+                android:layout_weight="0.4"
                 android:background="@drawable/shape"
                 android:textColor="@color/colorPrimary" />
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.7" />
+                android:layout_weight="0.3" />
 
             <!-- <org.honorato.multistatetogglebutton.MultiStateToggleButton
                  android:id="@+id/main_gubun_multi_toggle"
@@ -88,13 +88,12 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1" />
+                android:layout_weight="0.7" />
 
             <info.hoang8f.android.segmented.SegmentedGroup xmlns:segmentedgroup="http://schemas.android.com/apk/res-auto"
                 android:id="@+id/day_segmented"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="2dp"
                 android:layout_weight="1"
                 android:orientation="horizontal"
                 segmentedgroup:sc_border_width="1.5dp"
