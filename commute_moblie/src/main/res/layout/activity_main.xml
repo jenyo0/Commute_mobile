@@ -7,38 +7,122 @@
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="40dp"
-        android:orientation="horizontal"
-        android:layout_marginTop="4dp"
-        android:layout_marginLeft="4dp"
-        android:layout_marginRight="4dp"
-        >
-
-        <Button
-            android:id="@+id/main_time"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"
-            android:background="@color/colorPrimary"
-            android:textColor="@color/white"
-            android:layout_gravity="left"/>
+        android:layout_height="100dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/border"
+        android:orientation="vertical">
 
         <LinearLayout
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:layout_height="wrap_content"/>
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginTop="13dp"
+            android:orientation="horizontal">
 
-        <org.honorato.multistatetogglebutton.MultiStateToggleButton
-            android:id="@+id/main_gubun_multi_toggle"
-            android:layout_width="0dp"
-            android:layout_weight="1.5"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right"
-            app:values="@array/planets_array"
-            app:mstbPrimaryColor="@color/colorPrimary"
-            app:mstbSecondaryColor="@color/white"
+            <Button
+                android:id="@+id/main_time"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="left"
+                android:layout_weight="0.3"
+                android:background="@drawable/shape"
+                android:textColor="@color/colorPrimary" />
 
-            />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="0.7" />
+
+            <!-- <org.honorato.multistatetogglebutton.MultiStateToggleButton
+                 android:id="@+id/main_gubun_multi_toggle"
+                 android:layout_width="0dp"
+                 android:layout_height="wrap_content"
+                 android:layout_gravity="right"
+                 android:layout_weight="1.5"
+                 app:mstbPrimaryColor="@color/colorPrimary"
+                 app:mstbSecondaryColor="@color/white"
+                 app:values="@array/planets_array" />-->
+
+            <info.hoang8f.android.segmented.SegmentedGroup xmlns:segmentedgroup="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/gubun_segmented"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                segmentedgroup:sc_border_width="1.5dp"
+                segmentedgroup:sc_corner_radius="10dp">
+
+                <RadioButton
+                    android:id="@+id/gubun_btn1"
+                    style="@style/RadioButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="출근" />
+
+                <RadioButton
+                    android:id="@+id/gubun_btn2"
+                    style="@style/RadioButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="퇴근" />
+
+                <RadioButton
+                    android:id="@+id/gubun_btn3"
+                    style="@style/RadioButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="셔틀" />
+            </info.hoang8f.android.segmented.SegmentedGroup>
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="35dp"
+            android:layout_marginLeft="4dp"
+            android:layout_marginRight="4dp"
+            android:layout_marginTop="4dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+            <info.hoang8f.android.segmented.SegmentedGroup xmlns:segmentedgroup="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/day_segmented"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="2dp"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                segmentedgroup:sc_border_width="1.5dp"
+                segmentedgroup:sc_corner_radius="10dp">
+
+                <RadioButton
+                    android:id="@+id/day_btn1"
+                    style="@style/RadioButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="평일" />
+
+                <RadioButton
+                    android:id="@+id/day_btn2"
+                    style="@style/RadioButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="휴일" />
+
+                <RadioButton
+                    android:id="@+id/day_btn3"
+                    style="@style/RadioButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="토요일" />
+            </info.hoang8f.android.segmented.SegmentedGroup>
+
+        </LinearLayout>
 
     </LinearLayout>
 
@@ -46,8 +130,8 @@
         android:id="@+id/main_list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="50dp"
         android:layout_marginLeft="4dp"
-        android:layout_marginRight="4dp"></ListView>
+        android:layout_marginRight="4dp"
+        android:layout_marginTop="50dp"></ListView>
 
 </LinearLayout>

@@ -8,6 +8,11 @@
     <string name="title_activity_read_stop">ReadStopActivity</string>
     <string name="total_route">전체노선보기</string>
 
+    <string-array name="day_array">
+        <item>평일</item>
+        <item>휴일</item>
+        <item>토요일</item>
+    </string-array>
 
     <string-array name="planets_array">
         <item>출근</item>

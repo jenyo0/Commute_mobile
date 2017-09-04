@@ -42,4 +42,5 @@ dependencies {
     compile 'com.amulyakhare:com.amulyakhare.textdrawable:1.0.1'
     compile 'org.honorato.multistatetogglebutton:multistatetogglebutton:0.2.2'
     compile 'com.naver.maps.open:naver-map-api:2.1.2@aar'
+    compile 'info.hoang8f:android-segmented:1.0.6'
 }

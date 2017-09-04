@@ -6,6 +6,7 @@ import android.content.res.Resources;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
@@ -15,26 +16,29 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RadioGroup;
 import android.widget.TimePicker;
 
 import org.honorato.multistatetogglebutton.MultiStateToggleButton;
-import org.honorato.multistatetogglebutton.ToggleButton;
 
 import java.util.ArrayList;
 
-import static samsungkh.com.commute_moblie.R.array.planets_array;
+import info.hoang8f.android.segmented.SegmentedGroup;
 
-public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
+public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener, RadioGroup.OnCheckedChangeListener{
 
     //하위호환성 문제로 support LIB 를 import해야 함.
     SearchView searchView;
     MultiStateToggleButton gubunButton;
+    SegmentedGroup gubun_segmented;
+    SegmentedGroup day_segmented;
+
 
     ArrayList<RouteVO> datas;
     ListView listView;
     Button main_time;
     int hour, minute;
-    String time, gubunStr;
+    String time, gubunStr, dayStr;
 
     Resources res;
     @Override
@@ -46,6 +50,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         initTimeButton();
         //set gubun multiButton
         initGubunButton();
+        //set Day multiButton
+        initDayButton();
 
         listView = (ListView) findViewById(R.id.main_list);
         listView.setOnItemClickListener(this);
@@ -81,19 +87,44 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     //출퇴근 버튼 클릭 이벤트
     private void initGubunButton(){
 
-        gubunButton = (MultiStateToggleButton)findViewById(R.id.main_gubun_multi_toggle);
-        gubunButton.setValue(0);
-        gubunButton.setOnValueChangedListener(new ToggleButton.OnValueChangedListener() {
-            @Override
-            public void onValueChanged(int position) {
+        gubun_segmented = (SegmentedGroup) findViewById(R.id.gubun_segmented);
+        gubun_segmented.check(R.id.gubun_btn1);
+        gubun_segmented.setOnCheckedChangeListener(this);
+    }
 
-                time = main_time.getText().toString();
-                String[] gubunArray = res.getStringArray(planets_array);
-                gubunStr = gubunArray[gubunButton.getValue()];
+    //DAY 버튼 클릭 이벤트
+    private void initDayButton(){
 
-                searchFun(null, time, gubunStr);
-            }
-        });
+        day_segmented = (SegmentedGroup) findViewById(R.id.day_segmented);
+        day_segmented.check(R.id.day_btn1);
+        day_segmented.setOnCheckedChangeListener(this);
+    }
+
+    @Override
+    public void onCheckedChanged(RadioGroup radioGroup, @IdRes int checkedId) {
+
+        switch (checkedId) {
+            case R.id.gubun_btn1:
+                gubunStr = "출근";
+                break;
+            case R.id.gubun_btn2:
+                gubunStr = "퇴근";
+                break;
+            case R.id.gubun_btn3:
+                gubunStr = "셔틀";
+                break;
+            case R.id.day_btn1:
+                dayStr = "평일";
+                break;
+            case R.id.day_btn2:
+                dayStr = "휴일";
+                break;
+            case R.id.day_btn3:
+                dayStr = "토요일";
+                break;
+        }
+        time = main_time.getText().toString();
+        searchFun(null, time, gubunStr, dayStr);
     }
 
     //TimePicker
@@ -104,9 +135,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             main_time.setText(msg);
 
             time = main_time.getText().toString();
-            String[] gubunArray = res.getStringArray(planets_array);
-            gubunStr = gubunArray[gubunButton.getValue()];
-            searchFun(null, time, gubunStr);
+
+            searchFun(null, time, gubunStr, dayStr);
         }
     };
 
@@ -116,12 +146,12 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         super.onResume();
 
         time = main_time.getText().toString();
-        res = getResources();
-        String[] gubunArray = res.getStringArray(planets_array);
-        gubunStr = gubunArray[gubunButton.getValue()];
+
+        gubunStr = "출근";
+        dayStr = "평일";
 
         //최초 로딩 시 전체 리스트 뿌려주기(단 최초 세팅된 시간 및 구분(출퇴근)값은 넘김)
-        searchFun(null, time, gubunStr);
+        searchFun(null, time, gubunStr, dayStr);
     }
 
     //메뉴구성을 위해 자동으로 콜되는 함수
@@ -154,11 +184,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             //로직처리부분
             time = main_time.getText().toString();
-            String[] gubunArray = res.getStringArray(planets_array);
-            gubunStr = gubunArray[gubunButton.getValue()];
 
             //구분으로 보내기 위한 조회조건 처리
-            searchFun(query, time, gubunStr);
+            searchFun(query, time, gubunStr, dayStr);
 
             return false;
         }
@@ -179,10 +207,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         intent.putExtra("rt_nm", datas.get(i).rt_nm);
         intent.putExtra("time", time);
         intent.putExtra("gubun", gubunStr);
+        intent.putExtra("day", dayStr);
         startActivity(intent);
     }
 
-    public void searchFun(String searchStr, String time, String gubun){
+    public void searchFun(String searchStr, String time, String gubun, String day){
 
         String timeStr = (time).replace(":","");
 
@@ -201,9 +230,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                     " WHERE 1=1 AND A.ROUTE_ID = C.ROUTE_ID AND B.ROUTE_ID = C.ROUTE_ID AND C.ROUTE_ID = D.ROUTE_ID AND A.MAX_STOP = C.ROUTE_SEQ AND B.MIN_STOP = D.ROUTE_SEQ) Z "+
             "WHERE A.ROUTE_ID = B.ROUTE_ID "+
                     "AND A.ROUTE_ID = Z.ROUTE_ID "+
-                    "AND B.DIRECTION = ?  "+
+                    "AND B.DIRECTION = ? "+
+                    "AND B.DAY = ? "+
                     "AND cast(replace(B.DEPART_TIME,':','') as integer) > cast(? as integer) "+
-                    "ORDER BY A.ROUTE_DESC ASC ", new String[]{gubun, timeStr});
+                    "ORDER BY A.ROUTE_DESC ASC ", new String[]{gubun, day, timeStr});
         }else{
             cursor = db.rawQuery(
                     "SELECT DISTINCT A.ROUTE_ID, A.ROUTE_DESC, Z.GUGAN  "+
@@ -217,9 +247,10 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                             "AND A.ROUTE_ID = Z.ROUTE_ID "+
                             "AND (A.ROUTE_DESC LIKE ?  OR A.STOP_DESC LIKE ? ) "+
                             "AND B.DIRECTION = ?  "+
+                            "AND B.DAY = ? "+
                             "AND cast(replace(B.DEPART_TIME,':','') as integer) > cast(? as integer) "+
                             "ORDER BY A.ROUTE_DESC ASC "
-            , new String[]{"%"+searchStr+"%", "%"+searchStr+"%", gubun, timeStr});
+            , new String[]{"%"+searchStr+"%", "%"+searchStr+"%", gubun, day, timeStr});
         }
 
         //추출데이터 SET
