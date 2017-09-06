@@ -33,12 +33,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     SegmentedGroup gubun_segmented;
     SegmentedGroup day_segmented;
 
-
     ArrayList<RouteVO> datas;
     ListView listView;
     Button main_time;
     int hour, minute;
-    String time, gubunStr, dayStr;
+    String time, gubunStr, dayStr, searchStr;
 
     Resources res;
     @Override
@@ -86,23 +85,25 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
     //출퇴근 버튼 클릭 이벤트
     private void initGubunButton(){
-
-        gubun_segmented = (SegmentedGroup) findViewById(R.id.gubun_segmented);
-        gubun_segmented.check(R.id.gubun_btn1);
-        gubun_segmented.setOnCheckedChangeListener(this);
+        if(gubunStr == null){
+            gubun_segmented = (SegmentedGroup) findViewById(R.id.gubun_segmented);
+            gubun_segmented.check(R.id.gubun_btn1);
+            gubun_segmented.setOnCheckedChangeListener(this);
+        }
     }
 
     //DAY 버튼 클릭 이벤트
     private void initDayButton(){
 
-        day_segmented = (SegmentedGroup) findViewById(R.id.day_segmented);
-        day_segmented.check(R.id.day_btn1);
-        day_segmented.setOnCheckedChangeListener(this);
+        if(dayStr == null){
+            day_segmented = (SegmentedGroup) findViewById(R.id.day_segmented);
+            day_segmented.check(R.id.day_btn1);
+            day_segmented.setOnCheckedChangeListener(this);
+        }
     }
 
     @Override
     public void onCheckedChanged(RadioGroup radioGroup, @IdRes int checkedId) {
-
         switch (checkedId) {
             case R.id.gubun_btn1:
                 gubunStr = "출근";
@@ -114,17 +115,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 gubunStr = "셔틀";
                 break;
             case R.id.day_btn1:
-                dayStr = "평일";
+                dayStr = "NOR";
                 break;
             case R.id.day_btn2:
-                dayStr = "휴일";
+                dayStr = "HOL";
                 break;
             case R.id.day_btn3:
-                dayStr = "토요일";
+                dayStr = "SAT";
                 break;
         }
         time = main_time.getText().toString();
-        searchFun(null, time, gubunStr, dayStr);
+        searchFun(searchStr, time, gubunStr, dayStr);
     }
 
     //TimePicker
@@ -136,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
             time = main_time.getText().toString();
 
-            searchFun(null, time, gubunStr, dayStr);
+            searchFun(searchStr, time, gubunStr, dayStr);
         }
     };
 
@@ -147,11 +148,15 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
 
         time = main_time.getText().toString();
 
-        gubunStr = "출근";
-        dayStr = "평일";
+        if(gubunStr == null){
+            gubunStr = "출근";
+        }
+        if(dayStr == null){
+            dayStr = "NOR";
+        }
 
         //최초 로딩 시 전체 리스트 뿌려주기(단 최초 세팅된 시간 및 구분(출퇴근)값은 넘김)
-        searchFun(null, time, gubunStr, dayStr);
+        searchFun(searchStr, time, gubunStr, dayStr);
     }
 
     //메뉴구성을 위해 자동으로 콜되는 함수
@@ -185,8 +190,9 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             //로직처리부분
             time = main_time.getText().toString();
 
+            searchStr = query;
             //구분으로 보내기 위한 조회조건 처리
-            searchFun(query, time, gubunStr, dayStr);
+            searchFun(searchStr, time, gubunStr, dayStr);
 
             return false;
         }
@@ -221,36 +227,37 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         Cursor cursor;
         if(searchStr == null || searchStr.equals("") ){
             cursor = db.rawQuery(
-                    "SELECT DISTINCT A.ROUTE_ID, A.ROUTE_DESC, Z.GUGAN "+
-                    "FROM CM_ROUTE A, CM_TIMETABLE B "+
-                    ",(SELECT A.ROUTE_ID, D.STOP_DESC ||' ~ '||C.STOP_DESC AS GUGAN FROM "+
-                    " (SELECT A.ROUTE_ID ,MAX(ROUTE_SEQ) MAX_STOP	FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) A, "+
-                    " (SELECT A.ROUTE_ID ,MIN(ROUTE_SEQ) MIN_STOP FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) B, "+
-                    " CM_ROUTE C, CM_ROUTE D "+
-                    " WHERE 1=1 AND A.ROUTE_ID = C.ROUTE_ID AND B.ROUTE_ID = C.ROUTE_ID AND C.ROUTE_ID = D.ROUTE_ID AND A.MAX_STOP = C.ROUTE_SEQ AND B.MIN_STOP = D.ROUTE_SEQ) Z "+
-            "WHERE A.ROUTE_ID = B.ROUTE_ID "+
-                    "AND A.ROUTE_ID = Z.ROUTE_ID "+
-                    "AND B.DIRECTION = ? "+
-                    "AND B.DAY = ? "+
-                    "AND cast(replace(B.DEPART_TIME,':','') as integer) > cast(? as integer) "+
-                    "ORDER BY A.ROUTE_DESC ASC ", new String[]{gubun, day, timeStr});
+                                "SELECT DISTINCT A.ROUTE_ID, A.ROUTE_DESC, Z.GUGAN                                "+
+                                "FROM CM_ROUTE A, CM_TIME B                                                       "+
+                                ",(SELECT A.ROUTE_ID, D.STOP_ID ||' ~ '||C.STOP_ID AS GUGAN FROM                  "+
+                                " (SELECT A.ROUTE_ID ,MAX(SEQ) MAX_STOP	FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) A,  "+
+                                " (SELECT A.ROUTE_ID ,MIN(SEQ) MIN_STOP FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) B,  "+
+                                " CM_ROUTE C, CM_ROUTE D                                                          "+
+                                "WHERE 1=1 AND A.ROUTE_ID = C.ROUTE_ID AND B.ROUTE_ID = C.ROUTE_ID                "+
+                                "AND C.ROUTE_ID = D.ROUTE_ID AND A.MAX_STOP = C.SEQ AND B.MIN_STOP = D.SEQ) Z     "+
+                                "WHERE A.ROUTE_ID = B.ROUTE_ID                                                    "+
+                                "AND A.ROUTE_ID = Z.ROUTE_ID                                                      "+
+                                "AND B.DIRECTION = ?                                                              "+
+                                "AND B.DAY_GUBN = ? "+
+                                "AND cast(replace(B.DEPART_TIME,':','') as integer) > cast(? as integer)          "+
+                                "ORDER BY A.ROUTE_DESC ASC", new String[]{gubun, day, timeStr});
         }else{
             cursor = db.rawQuery(
-                    "SELECT DISTINCT A.ROUTE_ID, A.ROUTE_DESC, Z.GUGAN  "+
-                            "FROM CM_ROUTE A, CM_TIMETABLE B "+
-                            ",(SELECT A.ROUTE_ID, D.STOP_DESC ||' ~ '||C.STOP_DESC AS GUGAN FROM "+
-                            " (SELECT A.ROUTE_ID ,MAX(ROUTE_SEQ) MAX_STOP	FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) A, "+
-                            " (SELECT A.ROUTE_ID ,MIN(ROUTE_SEQ) MIN_STOP FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) B, "+
-                            " CM_ROUTE C, CM_ROUTE D "+
-                            " WHERE 1=1 AND A.ROUTE_ID = C.ROUTE_ID AND B.ROUTE_ID = C.ROUTE_ID AND C.ROUTE_ID = D.ROUTE_ID AND A.MAX_STOP = C.ROUTE_SEQ AND B.MIN_STOP = D.ROUTE_SEQ) Z "+
-                            "WHERE A.ROUTE_ID = B.ROUTE_ID "+
-                            "AND A.ROUTE_ID = Z.ROUTE_ID "+
-                            "AND (A.ROUTE_DESC LIKE ?  OR A.STOP_DESC LIKE ? ) "+
-                            "AND B.DIRECTION = ?  "+
-                            "AND B.DAY = ? "+
-                            "AND cast(replace(B.DEPART_TIME,':','') as integer) > cast(? as integer) "+
-                            "ORDER BY A.ROUTE_DESC ASC "
-            , new String[]{"%"+searchStr+"%", "%"+searchStr+"%", gubun, day, timeStr});
+                    "SELECT DISTINCT A.ROUTE_ID, A.ROUTE_DESC, Z.GUGAN                                "+
+                            "FROM CM_ROUTE A, CM_TIME B                                                       "+
+                            ",(SELECT A.ROUTE_ID, D.STOP_ID ||' ~ '||C.STOP_ID AS GUGAN FROM                  "+
+                            " (SELECT A.ROUTE_ID ,MAX(SEQ) MAX_STOP	FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) A,  "+
+                            " (SELECT A.ROUTE_ID ,MIN(SEQ) MIN_STOP FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) B,  "+
+                            " CM_ROUTE C, CM_ROUTE D                                                          "+
+                            "WHERE 1=1 AND A.ROUTE_ID = C.ROUTE_ID AND B.ROUTE_ID = C.ROUTE_ID                "+
+                            "AND C.ROUTE_ID = D.ROUTE_ID AND A.MAX_STOP = C.SEQ AND B.MIN_STOP = D.SEQ) Z     "+
+                            "WHERE A.ROUTE_ID = B.ROUTE_ID                                                    "+
+                            "AND A.ROUTE_ID = Z.ROUTE_ID                                                      "+
+                            "AND (A.ROUTE_DESC LIKE ?  OR A.STOP_ID LIKE ? ) "+
+                            "AND B.DIRECTION = ?                                                              "+
+                            "AND B.DAY_GUBN = ? "+
+                            "AND cast(replace(B.DEPART_TIME,':','') as integer) > cast(? as integer)          "+
+                            "ORDER BY A.ROUTE_DESC ASC", new String[]{"%"+searchStr+"%", "%"+searchStr+"%", gubun, day, timeStr});
         }
 
         //추출데이터 SET

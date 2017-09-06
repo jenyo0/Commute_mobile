@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">NanoCity 출퇴근</string>
+    <string name="app_name">Nano Bus</string>
     <string name="app_pkg_name">com.commute_mobile</string>
     <string name="str_done">완료</string>
 

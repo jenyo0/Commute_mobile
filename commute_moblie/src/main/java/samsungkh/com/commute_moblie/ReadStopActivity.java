@@ -5,10 +5,13 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.TableLayout;
+import android.widget.TableRow;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -28,6 +31,7 @@ public class ReadStopActivity extends AppCompatActivity implements AdapterView.O
     ArrayList<TimeVO> time_datas;
     ListView listView;
     TextView time_table;
+    TableLayout time_tl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,9 +46,6 @@ public class ReadStopActivity extends AppCompatActivity implements AdapterView.O
 
         this.setTitle(route_name);
 
-//        Toast toast1 = Toast.makeText(this, route_id +", " + route_name +", "+ time +", "+ gubun, Toast.LENGTH_SHORT);
-//        toast1.show();
-
         listView = (ListView) findViewById(R.id.stop_list);
         listView.setOnItemClickListener(this);
 
@@ -58,9 +59,8 @@ public class ReadStopActivity extends AppCompatActivity implements AdapterView.O
                 }
         );
 
-
         serchStopList(route_id);
-        serchTimeList(route_id, time, gubun);
+        serchTimeLayoutList(route_id, time, gubun);
     }
 
     @Override
@@ -71,46 +71,7 @@ public class ReadStopActivity extends AppCompatActivity implements AdapterView.O
         data_point.add(datas.get(i));
         intent.putExtra("stop_datas", data_point);
 
-        //detail 조회를 위한 id값 intent로 넘기기
-        //intent.putExtra("stop_id", datas.get(i).stop_id);
-        //intent.putExtra("stop_desc", datas.get(i).stop_desc);
-
-        //String[] location = datas.get(i).gps.split(",");
-        //String longitude = location[0]; // 경도
-        //String latitude = location[1]; // 위도
-        //intent.putExtra("longitude", longitude);
-        //intent.putExtra("latitude", latitude);
-
         startActivity(intent);
-    }
-    public void serchTimeList(String route_id, String time, String gubun){
-        //정류장 화면 시간 리스트 데이터 가져오기
-        DBHelper helper = new DBHelper(this);
-        SQLiteDatabase db = helper.openDatabase();
-        Cursor cursor;
-
-        cursor = db.rawQuery("SELECT DISTINCT DEPART_TIME || "
-                        + " (case WHEN MON_FLAG='Y' "
-                        + " then ' (월-'||mon_time||')' "
-                        +" ELSE ''"
-                        +" END )"
-                        + " FROM CM_TIMETABLE "
-                        + " WHERE ROUTE_ID=? AND DIRECTION=? AND "
-                        + "cast(replace(DEPART_TIME,':','') as integer) > cast(replace(?,':','') as integer) "
-                        + "ORDER BY cast(replace(DEPART_TIME,':','') as integer)",
-                new String[]{route_id, gubun, time});
-
-        time_info = "";
-        while(cursor.moveToNext()) {
-            time_info += cursor.getString(0);
-            if (cursor.isLast()) continue;
-               time_info += "/ ";
-        }
-
-        db.close();
-
-        time_table = (TextView) findViewById(R.id.time_table);
-        time_table.setText(time_info);
     }
 
     public void serchStopList(String route_id){
@@ -119,10 +80,12 @@ public class ReadStopActivity extends AppCompatActivity implements AdapterView.O
         SQLiteDatabase db = helper.openDatabase();
         Cursor cursor;
 
-        cursor = db.rawQuery("SELECT route_id, stop_id, stop_desc, gps "
-                        + " FROM CM_ROUTE "
-                + " WHERE ROUTE_ID=? "
-                + " ORDER BY STOP_ID ", new String[]{route_id});
+        cursor = db.rawQuery(
+                " SELECT A.ROUTE_ID, A.STOP_ID, B.LONGI, B.LATI "
+                + "FROM CM_ROUTE A, CM_STOP B "
+                + " WHERE A.STOP_ID = B.STOP_ID "
+                + " AND A.ROUTE_ID=? "
+                + " ORDER BY SEQ ", new String[]{route_id});
 
         datas = new ArrayList<StopVO>();
 
@@ -131,8 +94,8 @@ public class ReadStopActivity extends AppCompatActivity implements AdapterView.O
 
             vo.rt_id = cursor.getString(0);
             vo.stop_id = cursor.getString(1);
-            vo.stop_desc = cursor.getString(2);
-            vo.gps = cursor.getString(3);
+            vo.longi = cursor.getString(2);
+            vo.lati = cursor.getString(3);
 
             datas.add(vo);
         }
@@ -142,4 +105,48 @@ public class ReadStopActivity extends AppCompatActivity implements AdapterView.O
         StopListAdapter adapter = new StopListAdapter(this, R.layout.stop_list_item, datas);
         listView.setAdapter(adapter);
     }
+
+    public void serchTimeLayoutList(String route_id, String time, String gubun){
+
+        //정류장 화면 시간 리스트 데이터 가져오기
+        DBHelper helper = new DBHelper(this);
+        SQLiteDatabase db = helper.openDatabase();
+        Cursor cursor;
+
+        cursor = db.rawQuery(
+                          " SELECT DISTINCT                   "
+                        + " DEPART_TIME ,                     "
+                        + " case WHEN MONDAY_FLAG='Y'         "
+                        + " 	then monday_time               "
+                        + " 	ELSE '-'                       "
+                        + " 	END AS MON_TIME                "
+                        + "  FROM CM_TIME                     "
+                        + "  WHERE ROUTE_ID=? AND DIRECTION=? "
+                        + " AND cast(replace(DEPART_TIME,':','') as integer) > cast(replace(?,':','') as integer) "
+                        + " ORDER BY cast(replace(DEPART_TIME,':','') as integer)",
+                new String[]{route_id, gubun, time});
+
+        time_info = "";
+
+        time_tl = (TableLayout)findViewById(R.id.time_tableLayout);
+
+
+        while(cursor.moveToNext()) {
+            TableRow tr = new TableRow(this);
+            TextView tv1 =  new TextView(this);
+            TextView tv2 =  new TextView(this);
+            tv1.setGravity(Gravity.CENTER);
+            tv2.setGravity(Gravity.CENTER);
+            tv1.setText(cursor.getString(0)) ;
+            tv2.setText(cursor.getString(1)) ;
+            tr.addView(tv1);
+            tr.addView(tv2);
+            time_tl.addView(tr);
+        }
+
+        db.close();
+
+    }
+
+
 }

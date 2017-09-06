@@ -52,11 +52,9 @@ public class MapActivity extends NMapActivity {
     private NMapController mMapController;
 
     private String stop_id;
-    private String stop_desc;
     private String longitude;
     private String latitude;
     private ArrayList<StopVO> stop_datas = new ArrayList<StopVO>();
-    private String[] location ;
 
     private static final NGeoPoint NMAP_LOCATION_DEFAULT = new NGeoPoint(126.978371, 37.5666091);
     private static final int NMAP_ZOOMLEVEL_DEFAULT = 11;
@@ -214,13 +212,11 @@ public class MapActivity extends NMapActivity {
 
         for(int i= 0 ; i <stop_datas.size() ; i++) {
             stop_id = stop_datas.get(i).stop_id;
-            stop_desc = stop_datas.get(i).stop_desc;
-            location = stop_datas.get(i).gps.split(",");
-            longitude = location[0];
-            latitude = location[1];
+            longitude = stop_datas.get(i).longi;
+            latitude = stop_datas.get(i).lati;
 
             // 일반 위치 마커 및 경로 그리기 (for문으로 갯수만큼 구현)
-            poiData.addPOIitem(Double.parseDouble(longitude), Double.parseDouble(latitude), stop_desc, markerId, 0);
+            poiData.addPOIitem(Double.parseDouble(longitude), Double.parseDouble(latitude), stop_id, markerId, 0);
             pathData.addPathPoint(Double.parseDouble(longitude), Double.parseDouble(latitude),0);
         }
 

@@ -23,7 +23,52 @@
 
     </LinearLayout>
 
+    <TableLayout
+        android:layout_width="match_parent"
+        android:layout_height="16dp"
+        android:stretchColumns="*">
+
+        <TableRow
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@color/gray"
+                android:gravity="center"
+                android:text="평일"
+                android:textColor="#FFFFFF"
+                android:textColorLink="@color/black"
+                android:textSize="12sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@android:color/darker_gray"
+                android:gravity="center"
+                android:text="월요일"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp" />
+        </TableRow>
+    </TableLayout>
+
     <ScrollView
+        android:id="@+id/viewContentOne"
+        android:layout_width="wrap_content"
+        android:layout_height="60dp">
+
+        <TableLayout
+            android:id="@+id/time_tableLayout"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:scrollbars="horizontal"
+            android:stretchColumns="*">
+
+        </TableLayout>
+    </ScrollView>
+
+   <!-- <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="wrap_content"
         android:layout_height="75dp"
@@ -40,13 +85,13 @@
             android:textStyle="bold" />
 
     </ScrollView>
-
+-->
     <ListView
         android:id="@+id/stop_list"
         android:layout_width="match_parent"
-        android:layout_height="361dp"
+        android:layout_height="match_parent"
         android:layout_marginLeft="4dp"
         android:layout_marginRight="4dp"
-        android:layout_marginTop="50dp" />
+        android:layout_marginTop="10dp" />
 
 </LinearLayout>

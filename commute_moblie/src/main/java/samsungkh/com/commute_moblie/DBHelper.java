@@ -12,7 +12,7 @@ import java.io.OutputStream;
 
 public class DBHelper {
 
-    private static final String DB_NAME = "bus.db";
+    private static final String DB_NAME = "bus_new.db";
 
     private Context context;
 
