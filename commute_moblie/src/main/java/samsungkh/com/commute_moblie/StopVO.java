@@ -10,6 +10,7 @@ public class StopVO implements Serializable{
 
     String rt_id;     // route_id
     String stop_id;   // 정거장 id
+    String stop_desc;   // 정거장 id
     String longi;        // gps 정보
     String lati;        // gps 정보
 

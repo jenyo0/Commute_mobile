@@ -51,7 +51,7 @@ public class MapActivity extends NMapActivity {
     private NMapView mMapView;
     private NMapController mMapController;
 
-    private String stop_id;
+    private String stop_desc;
     private String longitude;
     private String latitude;
     private ArrayList<StopVO> stop_datas = new ArrayList<StopVO>();
@@ -211,12 +211,12 @@ public class MapActivity extends NMapActivity {
         Log.d("jojo", "BUS DATA OverLay");
 
         for(int i= 0 ; i <stop_datas.size() ; i++) {
-            stop_id = stop_datas.get(i).stop_id;
+            stop_desc = stop_datas.get(i).stop_desc;
             longitude = stop_datas.get(i).longi;
             latitude = stop_datas.get(i).lati;
 
             // 일반 위치 마커 및 경로 그리기 (for문으로 갯수만큼 구현)
-            poiData.addPOIitem(Double.parseDouble(longitude), Double.parseDouble(latitude), stop_id, markerId, 0);
+            poiData.addPOIitem(Double.parseDouble(longitude), Double.parseDouble(latitude), stop_desc, markerId, 0);
             pathData.addPathPoint(Double.parseDouble(longitude), Double.parseDouble(latitude),0);
         }
 

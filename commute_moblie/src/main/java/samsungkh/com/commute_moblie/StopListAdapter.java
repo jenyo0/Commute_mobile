@@ -54,7 +54,7 @@ public class StopListAdapter extends ArrayAdapter<RouteVO> {
 
         final StopVO vo = datas.get(position);
 
-        descView.setText(vo.stop_id);
+        descView.setText(vo.stop_desc);
         //mapIcon.setImageResource(R.drawable.map);
 
         return convertView;

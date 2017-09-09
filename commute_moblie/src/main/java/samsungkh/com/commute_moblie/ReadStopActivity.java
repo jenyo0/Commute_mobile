@@ -13,6 +13,7 @@ import android.widget.ListView;
 import android.widget.TableLayout;
 import android.widget.TableRow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
@@ -52,9 +53,26 @@ public class ReadStopActivity extends AppCompatActivity implements AdapterView.O
         findViewById(R.id.stop_map_button).setOnClickListener(
                 new Button.OnClickListener(){
                     public void onClick(View v){
-                        Intent intel_act = new Intent(ReadStopActivity.this, MapActivity.class);
-                       intel_act.putExtra("stop_datas", datas);
-                        startActivity(intel_act);
+
+                        boolean exist = true;
+
+                        for (int i = 0 ; i < datas.size();i ++){
+
+                            if((datas.get(i).longi).isEmpty() || (datas.get(i).lati).isEmpty()){
+                                exist = false;
+                                break;
+                            }
+                        }
+
+                        if(exist){
+                            Intent intel_act = new Intent(ReadStopActivity.this, MapActivity.class);
+                            intel_act.putExtra("stop_datas", datas);
+                            startActivity(intel_act);
+                        }else{
+                            Toast toast1 = Toast.makeText(getApplicationContext(), R.string.no_all_location, Toast.LENGTH_SHORT);
+                            toast1.show();
+                        }
+
                     }
                 }
         );
@@ -67,11 +85,15 @@ public class ReadStopActivity extends AppCompatActivity implements AdapterView.O
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         Intent intent = new Intent(this, MapActivity.class);
 
-        ArrayList<StopVO> data_point= new ArrayList<StopVO>();
-        data_point.add(datas.get(i));
-        intent.putExtra("stop_datas", data_point);
-
-        startActivity(intent);
+        if(!(datas.get(i).lati).isEmpty() && !(datas.get(i).longi).isEmpty()){
+            ArrayList<StopVO> data_point= new ArrayList<StopVO>();
+            data_point.add(datas.get(i));
+            intent.putExtra("stop_datas", data_point);
+            startActivity(intent);
+        }else{
+            Toast toast = Toast.makeText(this, R.string.no_location, Toast.LENGTH_SHORT);
+            toast.show();
+        }
     }
 
     public void serchStopList(String route_id){
@@ -81,7 +103,7 @@ public class ReadStopActivity extends AppCompatActivity implements AdapterView.O
         Cursor cursor;
 
         cursor = db.rawQuery(
-                " SELECT A.ROUTE_ID, A.STOP_ID, B.LONGI, B.LATI "
+                " SELECT A.ROUTE_ID, B.STOP_ID, B.STOP_DESC, B.LONGI, B.LATI "
                 + "FROM CM_ROUTE A, CM_STOP B "
                 + " WHERE A.STOP_ID = B.STOP_ID "
                 + " AND A.ROUTE_ID=? "
@@ -94,8 +116,9 @@ public class ReadStopActivity extends AppCompatActivity implements AdapterView.O
 
             vo.rt_id = cursor.getString(0);
             vo.stop_id = cursor.getString(1);
-            vo.longi = cursor.getString(2);
-            vo.lati = cursor.getString(3);
+            vo.stop_desc = cursor.getString(2);
+            vo.longi = cursor.getString(3);
+            vo.lati = cursor.getString(4);
 
             datas.add(vo);
         }

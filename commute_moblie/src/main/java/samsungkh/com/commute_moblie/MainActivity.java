@@ -10,6 +10,7 @@ import android.support.annotation.IdRes;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -208,6 +209,8 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         Intent intent = new Intent(this, ReadStopActivity.class);
 
+        Log.d("jojo", datas.get(i).rt_id);
+
         //detail 조회를 위한 id값 intent로 넘기기
         intent.putExtra("rt_id", datas.get(i).rt_id);
         intent.putExtra("rt_nm", datas.get(i).rt_nm);
@@ -229,10 +232,11 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
             cursor = db.rawQuery(
                                 "SELECT DISTINCT A.ROUTE_ID, A.ROUTE_DESC, Z.GUGAN                                "+
                                 "FROM CM_ROUTE A, CM_TIME B                                                       "+
-                                ",(SELECT A.ROUTE_ID, D.STOP_ID ||' ~ '||C.STOP_ID AS GUGAN FROM                  "+
+                                ",(SELECT A.ROUTE_ID, ' -> '||C.STOP_DESC AS GUGAN FROM                  "+
                                 " (SELECT A.ROUTE_ID ,MAX(SEQ) MAX_STOP	FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) A,  "+
                                 " (SELECT A.ROUTE_ID ,MIN(SEQ) MIN_STOP FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) B,  "+
-                                " CM_ROUTE C, CM_ROUTE D                                                          "+
+                                " (SELECT DISTINCT A.ROUTE_ID, A.SEQ, A.STOP_ID, B.STOP_DESC FROM CM_ROUTE A , CM_STOP B WHERE A.STOP_ID = B.STOP_ID ) C, "+
+                                " (SELECT DISTINCT A.ROUTE_ID, A.SEQ, A.STOP_ID, B.STOP_DESC FROM CM_ROUTE A , CM_STOP B WHERE A.STOP_ID = B.STOP_ID ) D "+
                                 "WHERE 1=1 AND A.ROUTE_ID = C.ROUTE_ID AND B.ROUTE_ID = C.ROUTE_ID                "+
                                 "AND C.ROUTE_ID = D.ROUTE_ID AND A.MAX_STOP = C.SEQ AND B.MIN_STOP = D.SEQ) Z     "+
                                 "WHERE A.ROUTE_ID = B.ROUTE_ID                                                    "+
@@ -244,16 +248,17 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         }else{
             cursor = db.rawQuery(
                     "SELECT DISTINCT A.ROUTE_ID, A.ROUTE_DESC, Z.GUGAN                                "+
-                            "FROM CM_ROUTE A, CM_TIME B                                                       "+
-                            ",(SELECT A.ROUTE_ID, D.STOP_ID ||' ~ '||C.STOP_ID AS GUGAN FROM                  "+
+                            "FROM (SELECT DISTINCT A.ROUTE_ID, A.ROUTE_DESC, A.SEQ, A.STOP_ID, B.STOP_DESC FROM CM_ROUTE A , CM_STOP B WHERE A.STOP_ID = B.STOP_ID ) A, CM_TIME B                                                       "+
+                            ",(SELECT A.ROUTE_ID, ' -> '||C.STOP_DESC AS GUGAN FROM                  "+
                             " (SELECT A.ROUTE_ID ,MAX(SEQ) MAX_STOP	FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) A,  "+
                             " (SELECT A.ROUTE_ID ,MIN(SEQ) MIN_STOP FROM CM_ROUTE A GROUP BY A.ROUTE_ID ) B,  "+
-                            " CM_ROUTE C, CM_ROUTE D                                                          "+
+                            " (SELECT DISTINCT A.ROUTE_ID, A.SEQ, A.STOP_ID, B.STOP_DESC FROM CM_ROUTE A , CM_STOP B WHERE A.STOP_ID = B.STOP_ID ) C, "+
+                            " (SELECT DISTINCT A.ROUTE_ID, A.SEQ, A.STOP_ID, B.STOP_DESC FROM CM_ROUTE A , CM_STOP B WHERE A.STOP_ID = B.STOP_ID ) D "+
                             "WHERE 1=1 AND A.ROUTE_ID = C.ROUTE_ID AND B.ROUTE_ID = C.ROUTE_ID                "+
                             "AND C.ROUTE_ID = D.ROUTE_ID AND A.MAX_STOP = C.SEQ AND B.MIN_STOP = D.SEQ) Z     "+
                             "WHERE A.ROUTE_ID = B.ROUTE_ID                                                    "+
                             "AND A.ROUTE_ID = Z.ROUTE_ID                                                      "+
-                            "AND (A.ROUTE_DESC LIKE ?  OR A.STOP_ID LIKE ? ) "+
+                            "AND (A.ROUTE_DESC LIKE ?  OR A.STOP_DESC LIKE ? ) "+
                             "AND B.DIRECTION = ?                                                              "+
                             "AND B.DAY_GUBN = ? "+
                             "AND cast(replace(B.DEPART_TIME,':','') as integer) > cast(? as integer)          "+
