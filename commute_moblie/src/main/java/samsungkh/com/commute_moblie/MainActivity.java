@@ -10,7 +10,6 @@ import android.support.annotation.IdRes;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.SearchView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -119,7 +118,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 dayStr = "NOR";
                 break;
             case R.id.day_btn2:
-                dayStr = "HOL";
+                dayStr = "SUN";
                 break;
             case R.id.day_btn3:
                 dayStr = "SAT";
@@ -208,8 +207,6 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         Intent intent = new Intent(this, ReadStopActivity.class);
-
-        Log.d("jojo", datas.get(i).rt_id);
 
         //detail 조회를 위한 id값 intent로 넘기기
         intent.putExtra("rt_id", datas.get(i).rt_id);

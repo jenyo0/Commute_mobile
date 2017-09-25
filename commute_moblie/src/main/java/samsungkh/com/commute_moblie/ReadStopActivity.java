@@ -59,6 +59,7 @@ public class ReadStopActivity extends AppCompatActivity implements AdapterView.O
                         for (int i = 0 ; i < datas.size();i ++){
 
                             if((datas.get(i).longi).isEmpty() || (datas.get(i).lati).isEmpty()){
+
                                 exist = false;
                                 break;
                             }

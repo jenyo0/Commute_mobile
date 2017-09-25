@@ -57,7 +57,7 @@ public class MapActivity extends NMapActivity {
     private ArrayList<StopVO> stop_datas = new ArrayList<StopVO>();
 
     private static final NGeoPoint NMAP_LOCATION_DEFAULT = new NGeoPoint(126.978371, 37.5666091);
-    private static final int NMAP_ZOOMLEVEL_DEFAULT = 11;
+    private static final int NMAP_ZOOMLEVEL_DEFAULT = 14;
     private static final int NMAP_VIEW_MODE_DEFAULT = NMapView.VIEW_MODE_VECTOR;
     private static final boolean NMAP_TRAFFIC_MODE_DEFAULT = false;
     private static final boolean NMAP_BICYCLE_MODE_DEFAULT = false;
@@ -206,9 +206,6 @@ public class MapActivity extends NMapActivity {
         // 경로 그리기 객체 선언
         NMapPathData pathData = new NMapPathData(busStopCount);
         pathData.initPathData();
-
-
-        Log.d("jojo", "BUS DATA OverLay");
 
         for(int i= 0 ; i <stop_datas.size() ; i++) {
             stop_desc = stop_datas.get(i).stop_desc;
